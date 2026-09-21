@@ -191,21 +191,39 @@ def _workflow_json(workflow: dict[str, Any] | None) -> dict[str, Any]:
     return raw or {}
 
 
-def _get_workflow(workflow_id: int | None = None) -> dict[str, Any] | None:
+def _get_workflow(
+    workflow_id: int | None = None,
+    *,
+    clip_order_index: int = 1,
+) -> dict[str, Any] | None:
     conn = get_db(settings.db_path)
     try:
         if workflow_id:
             row = conn.execute(
                 "SELECT * FROM workflows WHERE id = ? AND is_enabled = 1", (workflow_id,)
             ).fetchone()
-        else:
+        elif clip_order_index > 1:
+            # Clips 2+ in a scene use the Extend workflow by default
             row = conn.execute(
-                "SELECT * FROM workflows WHERE kind = 'video' AND is_enabled = 1 ORDER BY id ASC LIMIT 1"
+                "SELECT * FROM workflows WHERE name LIKE '%Extend%' AND kind = 'video' AND is_enabled = 1 LIMIT 1"
             ).fetchone()
             if not row:
                 row = conn.execute(
-                    "SELECT * FROM workflows WHERE is_enabled = 1 ORDER BY id ASC LIMIT 1"
+                    "SELECT * FROM workflows WHERE kind = 'video' AND is_enabled = 1 ORDER BY id ASC LIMIT 1"
                 ).fetchone()
+        else:
+            # Clip 1 in a scene uses Multi-Ref R2V workflow
+            row = conn.execute(
+                "SELECT * FROM workflows WHERE (name LIKE '%r2v%' OR name LIKE '%ref%') AND name NOT LIKE '%Extend%' AND kind = 'video' AND is_enabled = 1 ORDER BY id DESC LIMIT 1"
+            ).fetchone()
+            if not row:
+                row = conn.execute(
+                    "SELECT * FROM workflows WHERE kind = 'video' AND is_enabled = 1 ORDER BY id ASC LIMIT 1"
+                ).fetchone()
+        if not row:
+            row = conn.execute(
+                "SELECT * FROM workflows WHERE is_enabled = 1 ORDER BY id ASC LIMIT 1"
+            ).fetchone()
         return row_to_dict(row) if row else None
     finally:
         conn.close()
@@ -425,12 +443,18 @@ async def enqueue_video_jobs(
             # self-deadlocks (sqlite3.OperationalError: database is locked).
             conn.commit()
 
+            clip_order = clip.get("order_index") or 1
             wf_id = workflow_id or clip.get("workflow_id")
-            workflow = _get_workflow(wf_id)
+            workflow = _get_workflow(wf_id, clip_order_index=clip_order)
 
             workflow_json = _workflow_json(workflow)
             inputs = parse_dynamic_inputs(workflow_json) if workflow_json else []
             duration = clip.get("duration_sec") or clip.get("scene_duration_sec")
+
+            # Auto-chain clips 2+ when using an Extend workflow that possesses a video input
+            if clip_order > 1 and workflow and "extend" in (workflow.get("name") or "").lower():
+                if _video_input(inputs) and clip.get("chain_from_prev") is not False:
+                    clip["chain_from_prev"] = 1
 
             char_rows = conn.execute(
                 """
@@ -523,6 +547,18 @@ async def enqueue_video_jobs(
             for k, v in explicit_final.items():
                 if v not in (None, ""):
                     values[str(k)] = v
+
+            # Guard against invalid media types (e.g. audio path mistakenly passed to image slot)
+            for inp in inputs:
+                if inp.get("kind") in ("image", "image_url"):
+                    nid = str(inp["nodeId"])
+                    val = values.get(nid)
+                    if isinstance(val, str) and any(
+                        val.lower().endswith(ext)
+                        for ext in (".mp3", ".wav", ".aac", ".ogg", ".flac", ".m4a", ".wma")
+                    ):
+                        values.pop(nid, None)
+
             payload: dict[str, Any] = {"input_values": values, "prompt": prompt}
             if session_id is not None:
                 payload["session_id"] = session_id

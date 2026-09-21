@@ -493,6 +493,11 @@ export const en = {
 	'assets.refPlaceholder': 'Reference',
 	'assets.sentToComfy': 'Sent to ComfyUI',
 	'assets.uploadImage': 'Upload image',
+	'assets.uploadVoice': 'Upload voice',
+	'assets.replaceVoice': 'Replace voice',
+	'assets.voiceSample': 'Voice reference',
+	'assets.removeVoice': 'Remove voice',
+	'assets.voiceRemoved': 'Voice sample removed',
 	'assets.viewCharFull': 'View character full',
 	'assets.viewRefFull': 'View reference full',
 	'assets.viewFull': 'View full size',
@@ -501,6 +506,9 @@ export const en = {
 	'assets.genSettings': 'Generation settings',
 	'assets.toast.addImageFailed': 'Could not add image',
 	'assets.toast.chooseImage': 'Choose an image',
+	'assets.toast.chooseAudio': 'Choose an audio file (.wav, .mp3, .flac, .ogg, .m4a)',
+	'assets.toast.voiceAdded': 'Voice sample added for “{name}”',
+	'assets.toast.addVoiceFailed': 'Could not upload voice sample',
 	'assets.toast.coverFail': 'Could not set cover',
 	'assets.toast.coverRemoved': 'Cover removed',
 	'assets.toast.coverUpdated': 'Cover updated',
@@ -641,6 +649,9 @@ export const en = {
 	'queue.blockoutClipSuffix': 'blockout clip',
 	'queue.uploadSuffix': 'upload',
 	'queue.generateAllTitle': 'Generate all clips',
+	'queue.generateDialogue': 'Generate all dialogue',
+	'queue.generateDialogueTitle': 'Generate audio speech for all dialogue lines across clips using Higgs / Fish',
+	'queue.dialogueQueued': 'Dialogue jobs queued',
 	'queue.generateMissing': 'Generate missing',
 	'queue.regenerateAll': 'Regenerate all',
 	'queue.queueingProgress': 'Queued {n}/{total} jobs',
@@ -777,6 +788,13 @@ export const en = {
 	'shotBrief.notePost': 'in the Script stage to split it into coverage.',
 	'shotBrief.dialogKey': 'Dialog in this shot',
 	'shotBrief.characters': 'Characters',
+	'shotBrief.chainFromPrev': 'Chained from previous',
+	'shotBrief.generateVoice': 'Generate Voice',
+	'shotBrief.generatingVoice': 'Generating…',
+	'shotBrief.voiceEngine': 'Voice Engine',
+	'shotBrief.voiceHiggs': 'Higgs v3 (Reference Voice)',
+	'shotBrief.voiceFish': 'Fish Audio S2 (Expressive)',
+	'shotBrief.dialogAudio': 'Dialogue Audio',
 
 	// --- Prompt preview modal ---
 	'promptPreview.title': 'Prompt preview',
@@ -1017,6 +1035,8 @@ export const en = {
 	'settings.comfySection': 'ComfyUI',
 	'settings.comfyLead': 'Where ComfyUI runs.',
 	'settings.comfyHint': 'Must be reachable from this machine.',
+	'settings.comfyAudioUrl': 'Audio ComfyUI Base URL',
+	'settings.comfyAudioHint': 'Dedicated ComfyUI on port 8189 for Higgs v3 & Fish Audio S2 voice cloning.',
 	'settings.storageSection': 'Storage',
 	'settings.storageLead': 'Where files live on disk.',
 	'settings.storageCalloutStrong': 'Changing data directory',
@@ -1115,4 +1135,4 @@ export const en = {
 	'shot.errNoData': 'No scene data to export',
 };
 
-export type Dict = typeof en;
+export type Dict = Record<string, string>;

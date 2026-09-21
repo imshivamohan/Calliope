@@ -87,9 +87,11 @@
 	/** Render-history versioning: apply an older job's output to the clip. */
 	onApplyToClip?: (job: Job, path: string) => void;
 	applying?: boolean;
+	projectId?: number;
 	}
 
 	let {
+		projectId,
 		scenes,
 		filmClips,
 		selectedClip,
@@ -412,6 +414,19 @@
 				scene={selectedClip.scene}
 				label={selectedClip.label}
 				{formatClock}
+				{projectId}
+				onPastePrompt={(pastedText) => {
+					const promptSlot =
+						workflow?.input_schema?.find(
+							(inp) =>
+								(inp.kind === 'text' || inp.kind === 'textarea') &&
+								(inp.role === 'prompt' || inp.nodeId.toLowerCase().includes('prompt')),
+						) ?? workflow?.input_schema?.find((inp) => inp.kind === 'text' || inp.kind === 'textarea');
+					if (promptSlot) {
+						formValues = { ...formValues, [promptSlot.nodeId]: pastedText };
+						onFormChange?.(formValues);
+					}
+				}}
 			/>
 		{/if}
 		<OmniComposer

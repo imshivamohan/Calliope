@@ -19,6 +19,7 @@
 	import { normalizeInputRole } from '$lib/comfy/parser';
 	import type { AssetOption } from '$lib/assetPicker';
 	import { assetUrl } from '$lib/api';
+	import { toast } from '$lib/toast';
 	import Icon from '$lib/components/ui/Icon.svelte';
 	import { t } from '$lib/i18n.svelte';
 	import PillSelect from './omni/PillSelect.svelte';
@@ -190,6 +191,27 @@
 		}
 	}
 
+	let promptPasted = $state(false);
+	let promptPasteTimer: ReturnType<typeof setTimeout> | null = null;
+
+	async function pastePromptFromClipboard() {
+		if (!promptNode) return;
+		try {
+			const text = await navigator.clipboard.readText();
+			if (!text || !text.trim()) {
+				toast.error('Clipboard is empty');
+				return;
+			}
+			setValue(promptNode.nodeId, text.trim());
+			promptPasted = true;
+			if (promptPasteTimer) clearTimeout(promptPasteTimer);
+			promptPasteTimer = setTimeout(() => (promptPasted = false), 1500);
+			toast.success('Pasted image description into prompt');
+		} catch {
+			toast.error('Could not access clipboard');
+		}
+	}
+
 	// ── Validity tracking ─────────────────────────────────────────────────
 
 	function isBlank(val: string | number | undefined): boolean {
@@ -232,36 +254,55 @@
 	<!-- ── Composer body ─────────────────────────────────────────────── -->
 	<div class="omni-composer" class:has-media={classified.media.length > 0}>
 		{#if classified.media.length > 0}
-			<div class="media-tray">
-				{#each classified.media as mc, idx (mc.input.nodeId)}
-					{@const nodeId = mc.input.nodeId}
-					{@const targetName = getTargetName(mc.input, idx)}
-					<MediaTile
-						input={mc.input}
-						value={String(values[nodeId] ?? '')}
-						uploadingName={uploadMgr.uploading[nodeId] ?? null}
-						{assetOptions}
-						{allowUpload}
-						targetAssetName={targetName}
-						invalid={showErrors && isBlank(values[nodeId])}
-						onselectFile={(file) => handleFileUpload(nodeId, file)}
-						onselectAsset={(path) => handleAssetSelect(nodeId, path)}
-						onclear={() => clearValue(nodeId)}
-					/>
-				{/each}
+			<div class="media-section">
+				<div class="section-head">
+					<span class="section-label">Reference Inputs</span>
+				</div>
+				<div class="media-tray">
+					{#each classified.media as mc, idx (mc.input.nodeId)}
+						{@const nodeId = mc.input.nodeId}
+						{@const targetName = getTargetName(mc.input, idx)}
+						<MediaTile
+							input={mc.input}
+							value={String(values[nodeId] ?? '')}
+							uploadingName={uploadMgr.uploading[nodeId] ?? null}
+							{assetOptions}
+							{allowUpload}
+							targetAssetName={targetName}
+							invalid={showErrors && isBlank(values[nodeId])}
+							onselectFile={(file) => handleFileUpload(nodeId, file)}
+							onselectAsset={(path) => handleAssetSelect(nodeId, path)}
+							onclear={() => clearValue(nodeId)}
+						/>
+					{/each}
+				</div>
 			</div>
 		{/if}
 
 		{#if promptNode}
-			<textarea
-				class="prompt-area"
-				placeholder={t('omni.promptPlaceholder')}
-				rows="3"
-				value={values[promptNode.nodeId] ?? ''}
-				oninput={(e) => setValue(promptNode.nodeId, e.currentTarget.value)}
-				onkeydown={onPromptKeydown}
-				aria-label={t('omni.promptAria')}
-			></textarea>
+			<div class="prompt-container">
+				<div class="prompt-head">
+					<span class="prompt-label">Describe Image</span>
+					<button
+						type="button"
+						class="prompt-paste-btn"
+						title="Paste image description from clipboard"
+						onclick={pastePromptFromClipboard}
+					>
+						<Icon name={promptPasted ? 'check' : 'clipboard'} size={12} />
+						<span>{promptPasted ? 'Pasted' : 'Paste'}</span>
+					</button>
+				</div>
+				<textarea
+					class="prompt-area"
+					placeholder={t('omni.promptPlaceholder')}
+					rows="3"
+					value={values[promptNode.nodeId] ?? ''}
+					oninput={(e) => setValue(promptNode.nodeId, e.currentTarget.value)}
+					onkeydown={onPromptKeydown}
+					aria-label={t('omni.promptAria')}
+				></textarea>
+			</div>
 		{:else}
 			<textarea
 				class="prompt-area no-prompt-role"
@@ -422,11 +463,72 @@
 		min-height: 120px;
 	}
 
+	.media-section {
+		margin-bottom: 14px;
+	}
+
+	.section-head {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		margin-bottom: 8px;
+	}
+
+	.section-label {
+		font-size: 11px;
+		font-weight: 700;
+		text-transform: uppercase;
+		letter-spacing: 0.06em;
+		color: var(--text-muted);
+	}
+
 	.media-tray {
 		display: flex;
 		gap: 10px;
 		flex-wrap: wrap;
-		margin-bottom: 12px;
+	}
+
+	.prompt-container {
+		display: flex;
+		flex-direction: column;
+		gap: 6px;
+	}
+
+	.prompt-head {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		margin-bottom: 2px;
+	}
+
+	.prompt-label {
+		font-size: 11px;
+		font-weight: 700;
+		text-transform: uppercase;
+		letter-spacing: 0.06em;
+		color: var(--text-muted);
+	}
+
+	.prompt-paste-btn {
+		display: inline-flex;
+		align-items: center;
+		gap: 5px;
+		background: var(--bg-surface-elevated, rgba(255, 255, 255, 0.06));
+		border: 1px solid var(--border);
+		border-radius: var(--radius-sm, 4px);
+		color: var(--text-secondary);
+		font-size: 11px;
+		font-weight: 600;
+		font-family: var(--font-body);
+		padding: 3px 8px;
+		cursor: pointer;
+		transition: all 0.15s ease;
+	}
+
+	.prompt-paste-btn:hover {
+		background: var(--bg-surface-hover, rgba(255, 255, 255, 0.12));
+		color: var(--text-primary);
+		border-color: var(--accent, #6366f1);
 	}
 
 	.prompt-area {

@@ -153,6 +153,12 @@ def smart_fill_inputs(
     if ref_images:
         for inp, path in zip(ref_image_slots(inputs), ref_images):
             values[str(inp["nodeId"])] = path
+    else:
+        fallback_refs = [p for p in (character_image, location_image) if p]
+        if fallback_refs:
+            for inp, path in zip(ref_image_slots(inputs), fallback_refs):
+                if str(inp["nodeId"]) not in values:
+                    values[str(inp["nodeId"])] = path
 
     if ref_videos:
         for inp, path in zip(ref_video_slots(inputs), ref_videos):

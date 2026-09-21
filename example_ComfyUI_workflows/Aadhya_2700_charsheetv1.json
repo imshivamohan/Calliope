@@ -1,7 +1,7 @@
 {
   "29": {
     "inputs": {
-      "filename_prefix": "story_demo/Aadhya2900_CharSheet",
+      "filename_prefix": "krea2_identity_edit/Aadhya2700_CharSheet",
       "images": [
         "54",
         0
@@ -355,7 +355,7 @@
   },
   "152": {
     "inputs": {
-      "lora_name": "aadhya_sharma_krea2_raw_r16_v1_copy_000002900.safetensors",
+      "lora_name": "aadhya_sharma_krea2_raw_r16_v1_copy_000002700.safetensors",
       "strength_model": 1.0,
       "model": [
         "148",

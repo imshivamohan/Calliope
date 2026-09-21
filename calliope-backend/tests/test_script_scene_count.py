@@ -49,7 +49,12 @@ def test_script_regenerate_keeps_expanded_count(client, monkeypatch):
             ]
         }
 
+    async def fake_expand(project_id, scene_ids, guidance=None, clip_cap=None):
+        return {"ok": True, "scenes": [{"scene_id": sid, "clips": 1} for sid in scene_ids]}
+
     monkeypatch.setattr("calliope.agent.script_agent.generate_structured", fake_structured)
+    monkeypatch.setattr("calliope.routers.story.generate_structured", fake_structured)
+    monkeypatch.setattr("calliope.agent.coverage_agent.expand_scene_coverage", fake_expand)
 
     r = client.post("/api/projects", json={"title": "Expand", "idea": "desert", "target_duration": "30 seconds"})
     pid = r.json()["id"]

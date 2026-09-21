@@ -510,6 +510,23 @@ const generateOne = createMutation({
 		await client.invalidateQueries({ queryKey: ['scenes'] });
 	}
 
+	let generatingDialogue = $state(false);
+	async function generateDialogue(engine: 'higgs' | 'fish' = 'higgs') {
+		generatingDialogue = true;
+		try {
+			const res = await projects.generateDialogue(projectId, { engine });
+			toast.success(
+				`${t('queue.dialogueQueued')} (${res.total_queued} clips, ${engine === 'higgs' ? 'Higgs v3' : 'Fish Audio S2'})`,
+			);
+			await client.invalidateQueries({ queryKey: ['project', projectId] });
+			await client.invalidateQueries({ queryKey: ['jobs', projectId] });
+		} catch (err) {
+			toast.error(err instanceof Error ? err.message : 'Failed to generate dialogue');
+		} finally {
+			generatingDialogue = false;
+		}
+	}
+
 	function workflowFor(scene: Scene): Workflow | undefined {
 		const id = selectedWorkflow[scene.id] ?? scene.workflow_id ?? undefined;
 		return enabledWorkflows.find((w) => w.id === id) ?? enabledWorkflows[0] ?? undefined;
@@ -801,6 +818,15 @@ const generateOne = createMutation({
 			>
 				<Icon name="film" size={14} /> {batchLabel}
 			</Button>
+			<Button
+				variant="secondary"
+				disabled={generatingDialogue}
+				loading={generatingDialogue}
+				title={t('queue.generateDialogueTitle')}
+				onclick={() => generateDialogue('higgs')}
+			>
+				<Icon name="mic" size={14} /> {t('queue.generateDialogue')}
+			</Button>
 		{/if}
 		<Button variant="secondary" onclick={togglePause}>
 			{$queueStatusQuery.data?.paused ? t('queue.resumeQueue') : t('queue.pauseQueue')}
@@ -871,6 +897,7 @@ const generateOne = createMutation({
 			onchange={onVideoFileChosen}
 		/>
 		<VideoEditWorkspace
+			{projectId}
 			{scenes}
 			{filmClips}
 			selectedClip={selectedEntry}

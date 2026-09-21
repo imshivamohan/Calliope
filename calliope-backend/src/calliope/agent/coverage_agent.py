@@ -113,12 +113,30 @@ sum ≈ {scene_secs}, no clip exceeds {clip_cap}s. If not, fix it."""
     ]
 
 
+def _estimate_dialog_duration(dialog_lines: list[str], covered_indices: list[int]) -> int:
+    """Estimate spoken audio duration in seconds for covered dialog lines."""
+    from calliope.audio.higgs import parse_dialogue_line
+    spoken_chunks: list[str] = []
+    for idx in covered_indices:
+        if 1 <= idx <= len(dialog_lines):
+            _, _, spk = parse_dialogue_line(dialog_lines[idx - 1])
+            if spk:
+                spoken_chunks.append(spk)
+    full_text = " ".join(spoken_chunks).strip()
+    words = len(full_text.split())
+    if words == 0:
+        return 0
+    # Natural speech is ~2.5 words/sec + 1s prosody pause buffer
+    return max(3, round(words / 2.5 + 1.0))
+
+
 def _normalize_clips(
     raw_clips: list[dict[str, Any]],
     *,
     n_dialog_lines: int,
     scene_budget: int,
     clip_cap: int,
+    dialog_lines: list[str] | None = None,
 ) -> list[dict[str, Any]]:
     """Validate + clamp the LLM's clip list; derive missing fields deterministically."""
     valid_sizes = {"wide", "medium", "closeUp", "insert", "overShoulder"}
@@ -148,6 +166,13 @@ def _normalize_clips(
             duration = None
         if not duration or duration < 2:
             duration = None
+
+        # Ensure clip duration is long enough for the spoken dialogue
+        if dialog_lines and covered:
+            audio_len = _estimate_dialog_duration(dialog_lines, covered)
+            if audio_len > 0:
+                duration = max(duration or 0, audio_len)
+
         clips.append(
             {
                 "order_index": c.get("order_index") if isinstance(c.get("order_index"), int) else i,
@@ -170,13 +195,20 @@ def _normalize_clips(
         clips[-1]["dialog_lines_covered"] = sorted(
             set(clips[-1]["dialog_lines_covered"]) | set(missing)
         )
+        if dialog_lines:
+            audio_len = _estimate_dialog_duration(dialog_lines, clips[-1]["dialog_lines_covered"])
+            if audio_len > 0:
+                clips[-1]["duration_sec"] = max(clips[-1]["duration_sec"], min(audio_len, clip_cap))
     # Re-normalize durations to the scene budget when the model overshot/undershot
     # wildly (>±35%); keep per-clip values inside the cap.
     total = sum(c["duration_sec"] for c in clips)
     if scene_budget > 0 and not (0.65 <= total / scene_budget <= 1.35):
         scale = scene_budget / total
         for c in clips:
-            c["duration_sec"] = max(2, min(clip_cap, round(c["duration_sec"] * scale)))
+            min_floor = 2
+            if dialog_lines and c.get("dialog_lines_covered"):
+                min_floor = min(_estimate_dialog_duration(dialog_lines, c["dialog_lines_covered"]), clip_cap)
+            c["duration_sec"] = max(min_floor, min(clip_cap, round(c["duration_sec"] * scale)))
     return clips
 
 
@@ -264,14 +296,32 @@ async def expand_scene_coverage(
             dialog_lines = _dialog_lines(scene.get("dialog"))
             budget = scene.get("duration_sec") or estimate_scene_duration_sec(scene)
             clips = _normalize_clips(
-                raw_clips, n_dialog_lines=len(dialog_lines), scene_budget=budget, clip_cap=cap
+                raw_clips,
+                n_dialog_lines=len(dialog_lines),
+                scene_budget=budget,
+                clip_cap=cap,
+                dialog_lines=dialog_lines,
             )
 
-            # Replace-the-scene's-clips transaction. The scene-level chain flag
-            # migrates onto clip #1; the default clip (backfill) had copied it.
+            # Dual-Workflow Strategy:
+            # - Clip 1: Multi-ref R2V workflow (scene opener with full character and environment references)
+            # - Clips 2+: Extend workflow (chains from previous clip video + 2 reference images)
+            row_extend = conn.execute(
+                "SELECT id FROM workflows WHERE name LIKE '%Extend%' AND kind = 'video' AND is_enabled = 1 LIMIT 1"
+            ).fetchone()
+            extend_wf_id = row_extend["id"] if row_extend else None
+
+            row_r2v = conn.execute(
+                "SELECT id FROM workflows WHERE (name LIKE '%r2v%' OR name LIKE '%ref%') AND name NOT LIKE '%Extend%' AND kind = 'video' AND is_enabled = 1 ORDER BY id DESC LIMIT 1"
+            ).fetchone()
+            r2v_wf_id = row_r2v["id"] if row_r2v else None
+
             scene_chain = bool(scene.get("chain_from_prev"))
             conn.execute("DELETE FROM clips WHERE scene_id = ?", (scene["id"],))
             for c in clips:
+                is_extend = c["order_index"] > 1
+                clip_wf = (extend_wf_id if (is_extend and extend_wf_id) else (scene.get("workflow_id") or r2v_wf_id))
+                is_chained = 1 if ((c["order_index"] == 1 and scene_chain) or c.get("chain_from_prev")) else 0
                 conn.execute(
                     """
                     INSERT INTO clips (scene_id, project_id, order_index, description,
@@ -287,8 +337,8 @@ async def expand_scene_coverage(
                         c["shot_size"],
                         json.dumps(c["dialog_lines_covered"]) if c["dialog_lines_covered"] else None,
                         c["duration_sec"],
-                        scene.get("workflow_id"),
-                        1 if (c["order_index"] == 1 and scene_chain) or c["chain_from_prev"] else 0,
+                        clip_wf,
+                        is_chained,
                     ),
                 )
             # The scene is now represented by its clips; clear its legacy

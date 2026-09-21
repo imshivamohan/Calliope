@@ -151,29 +151,65 @@ class QueueWorker:
             # and dry-run writes an mp4 placeholder (not the default PNG).
             return await run_export(job, payload, event_bus, dry_run=use_dry)
 
-        client = ComfyUIClient(config.settings.comfyui_base_url)
+        is_audio = kind in ("audio", "voice", "speech", "tts", "music") or bool(payload.get("audio_endpoint"))
+        target_url = (
+            config.settings.comfyui_audio_base_url
+            if (is_audio and config.settings.comfyui_audio_base_url)
+            else config.settings.comfyui_base_url
+        )
+        client = ComfyUIClient(target_url)
         try:
             if use_dry:
                 return await self._dry_run(job, payload)
 
             healthy = await client.health()
             if not healthy:
-                raise RuntimeError(
-                    f"ComfyUI unreachable at {config.settings.comfyui_base_url}. "
-                    "Start ComfyUI, or enable Dry-run in Settings only for placeholder testing."
-                )
+                # If dedicated audio endpoint was attempted and failed, try falling back to main endpoint
+                if is_audio and target_url != config.settings.comfyui_base_url:
+                    logger.warning(
+                        "Audio ComfyUI at %s unreachable; falling back to main endpoint %s",
+                        target_url,
+                        config.settings.comfyui_base_url,
+                    )
+                    await client.close()
+                    client = ComfyUIClient(config.settings.comfyui_base_url)
+                    healthy = await client.health()
+
+                if not healthy:
+                    raise RuntimeError(
+                        f"ComfyUI unreachable at {target_url}. "
+                        "Start ComfyUI, or enable Dry-run in Settings only for placeholder testing."
+                    )
 
             workflow_id = job.get("workflow_id") or payload.get("workflow_id")
-            workflow = self._load_workflow(workflow_id)
-            if not workflow:
-                raise RuntimeError("No workflow found for job")
-
-            input_values = payload.get("input_values") or {}
-            if payload.get("continue_source") and kind == "video":
-                input_values = await self._resolve_continue_source(
-                    job, payload, workflow, dict(input_values)
+            if not workflow_id and kind in ("voice", "tts"):
+                from calliope.audio.higgs import build_voice_clone_prompt
+                text = (
+                    payload.get("dialog_text")
+                    or (payload.get("input_values") or {}).get("text")
+                    or ""
                 )
-            patched = patch_workflow(workflow, input_values)
+                voice_ref = payload.get("voice_sample_path") or (
+                    payload.get("input_values") or {}
+                ).get("reference_audio")
+                engine = payload.get("engine") or "higgs"
+                patched = build_voice_clone_prompt(
+                    text,
+                    voice_ref,
+                    output_prefix=f"clip_{job.get('clip_id')}_voice",
+                    engine=engine,
+                )
+            else:
+                workflow = self._load_workflow(workflow_id)
+                if not workflow:
+                    raise RuntimeError("No workflow found for job")
+
+                input_values = payload.get("input_values") or {}
+                if payload.get("continue_source") and kind == "video":
+                    input_values = await self._resolve_continue_source(
+                        job, payload, workflow, dict(input_values)
+                    )
+                patched = patch_workflow(workflow, input_values)
             patched = await client.prepare_media_inputs(patched)
             prompt_id = await client.queue_prompt(patched)
 
@@ -432,6 +468,11 @@ class QueueWorker:
                         "UPDATE characters SET portrait_path = ? WHERE id = ?",
                         (primary, character_id),
                     )
+                elif target == "voice":
+                    conn.execute(
+                        "UPDATE characters SET voice_sample_path = ? WHERE id = ?",
+                        (primary, character_id),
+                    )
                 else:
                     conn.execute(
                         "UPDATE characters SET sheet_path = ? WHERE id = ?",
@@ -448,6 +489,34 @@ class QueueWorker:
                     (primary, item_id),
                 )
             if job.get("clip_id") and job["kind"] == "video":
+                # If clip already has dialogue audio, mux it into the video container for instant playback
+                row = conn.execute(
+                    "SELECT audio_path FROM clips WHERE id = ?", (job["clip_id"],)
+                ).fetchone()
+                audio_file = row["audio_path"] if row else None
+                if audio_file and _fs_path(audio_file).exists():
+                    try:
+                        import os
+                        import subprocess
+                        muxed = _fs_path(primary).with_suffix(".with_audio.mp4")
+                        cmd = [
+                            "ffmpeg", "-y",
+                            "-i", str(primary),
+                            "-i", str(audio_file),
+                            "-c:v", "copy",
+                            "-c:a", "aac",
+                            "-map", "0:v:0",
+                            "-map", "1:a:0",
+                            "-shortest",
+                            str(muxed),
+                        ]
+                        subprocess.run(cmd, capture_output=True, timeout=15)
+                        if muxed.exists() and muxed.stat().st_size > 0:
+                            os.replace(muxed, primary)
+                            logger.info("Muxed audio %s into video %s", audio_file, primary)
+                    except Exception as exc:
+                        logger.warning("Failed to mux dialogue audio into video: %s", exc)
+
                 conn.execute(
                     "UPDATE clips SET clip_path = ? WHERE id = ?",
                     (primary, job["clip_id"]),
@@ -460,6 +529,11 @@ class QueueWorker:
                         SELECT scene_id FROM clips WHERE id = ?
                     )
                     """,
+                    (primary, job["clip_id"]),
+                )
+            elif job.get("clip_id") and job["kind"] in ("audio", "voice", "speech", "tts"):
+                conn.execute(
+                    "UPDATE clips SET audio_path = ? WHERE id = ?",
                     (primary, job["clip_id"]),
                 )
             elif scene_id and job["kind"] == "video":

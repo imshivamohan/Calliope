@@ -108,6 +108,7 @@ export interface Clip {
 	duration_sec: number | null;
 	workflow_id: number | null;
 	clip_path: string | null;
+	audio_path?: string | null;
 	chain_from_prev?: number | boolean | null;
 	video_settings?: SceneVideoSettings | null;
 	/** '#3.2' — scene 3, clip 2 (display label). */

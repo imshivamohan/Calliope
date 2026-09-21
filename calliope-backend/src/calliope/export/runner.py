@@ -175,14 +175,22 @@ def build_ffmpeg_cmd(
     cmd: list[str] = [ffmpeg, "-nostdin", "-nostats", "-progress", "pipe:1", "-y"]
     for clip in clips:
         cmd += ["-i", str(clip["clip_path"])]
-    # Silent clips get a lavfi silence donor input, appended after the clip inputs
-    # so input indices for real clips stay 0..n-1.
+    # Synthesized clip audio tracks (e.g. from Higgs Audio v3 dialog generation)
+    audio_track_indices: dict[int, int] = {}
+    current_input_idx = n
+    for i, clip in enumerate(clips):
+        a_path = clip.get("audio_path")
+        if a_path and Path(a_path).exists():
+            audio_track_indices[i] = current_input_idx
+            current_input_idx += 1
+            cmd += ["-i", str(a_path)]
+
+    # Silent clips that have no custom audio get a lavfi silence donor input
     lavfi_index: dict[int, int] = {}
-    next_index = n
     for i, p in enumerate(probes):
-        if not p["has_audio"]:
-            lavfi_index[i] = next_index
-            next_index += 1
+        if i not in audio_track_indices and not p["has_audio"]:
+            lavfi_index[i] = current_input_idx
+            current_input_idx += 1
             cmd += ["-f", "lavfi", "-i", "anullsrc=cl=stereo:r=48000"]
 
     v_chain = (
@@ -195,7 +203,13 @@ def build_ffmpeg_cmd(
     filters: list[str] = []
     for i, p in enumerate(probes):
         filters.append(f"[{i}:v]{v_chain}[v{i}]")
-        if p["has_audio"]:
+        if i in audio_track_indices:
+            # Prefer the dedicated synthesized voice dialogue track
+            filters.append(
+                f"[{audio_track_indices[i]}:a]atrim=duration={float(p['duration']):.3f},"
+                f"asetpts=PTS-STARTPTS,{a_chain}[a{i}]"
+            )
+        elif p["has_audio"]:
             filters.append(f"[{i}:a]{a_chain}[a{i}]")
         else:
             filters.append(

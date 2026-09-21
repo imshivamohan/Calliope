@@ -1,0 +1,97 @@
+{
+  "1": {
+    "inputs": {
+      "model": "higgs-audio-v3-tts-4b",
+      "dtype": "auto",
+      "device": "auto",
+      "attention": "auto",
+      "download_if_missing": false
+    },
+    "class_type": "HiggsV3LoadModel",
+    "_meta": {
+      "title": "Higgs v3 Load Model"
+    }
+  },
+  "8": {
+    "inputs": {
+      "audio": "WomanVoice6Sec.mp3"
+    },
+    "class_type": "LoadAudio",
+    "_meta": {
+      "title": "Reference Voice (Input:audio)"
+    }
+  },
+  "5": {
+    "inputs": {
+      "model": "whisper-large-v3-turbo (auto-download)",
+      "dtype": "auto",
+      "language": "auto",
+      "task": "transcribe",
+      "chunk_length_s": 30,
+      "download_if_missing": false,
+      "audio": [
+        "8",
+        0
+      ]
+    },
+    "class_type": "HiggsV3WhisperTranscribe",
+    "_meta": {
+      "title": "Whisper Transcriber"
+    }
+  },
+  "44": {
+    "inputs": {
+      "text": "Dialogue text to synthesize"
+    },
+    "class_type": "ttN text",
+    "_meta": {
+      "title": "Dialogue Script (Input:prompt)"
+    }
+  },
+  "35": {
+    "inputs": {
+      "max_new_tokens": 2048,
+      "temperature": 1.0,
+      "top_p": 0.95,
+      "top_k": 50,
+      "seed": 42,
+      "longform_chunking": true,
+      "words_per_chunk": 45,
+      "pause_between_chunks": 0.15,
+      "higgs_model": [
+        "1",
+        0
+      ],
+      "reference_audio": [
+        "8",
+        0
+      ],
+      "text": [
+        "44",
+        0
+      ],
+      "reference_text": [
+        "5",
+        0
+      ]
+    },
+    "class_type": "HiggsV3VoiceClone",
+    "_meta": {
+      "title": "Higgs Voice Clone"
+    }
+  },
+  "9": {
+    "inputs": {
+      "filename_prefix": "audio/calliope_higgs",
+      "quality": "320k",
+      "audio": [
+        "35",
+        0
+      ]
+    },
+    "class_type": "SaveAudioMP3",
+    "_meta": {
+      "title": "Save Audio MP3 (Output)"
+    }
+  }
+}

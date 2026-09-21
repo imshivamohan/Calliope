@@ -49,6 +49,7 @@ export interface Character {
 	portrait_path: string | null;
 	sheet_path: string | null;
 	consistency_prompt: string | null;
+	voice_sample_path?: string | null;
 }
 
 export interface Location {
@@ -95,6 +96,7 @@ export interface Settings {
 	llm_profiles: LlmProfile[];
 	llm_active_id: string | null;
 	comfyui_base_url: string;
+	comfyui_audio_base_url?: string;
 	queue_concurrency: number;
 	queue_poll_interval_sec: number;
 	queue_poll_timeout_sec: number;
@@ -258,6 +260,33 @@ export const projects = {
 		api<{ characters: Character[]; locations: Location[]; items: Item[] }>(
 			`/api/projects/${id}/assets`,
 		),
+	generateClipVoice: (
+		projectId: number,
+		clipId: number,
+		payload: {
+			text?: string;
+			character_id?: number;
+			engine?: 'higgs' | 'fish';
+			voice_option?: 'reference' | 'male' | 'female';
+			enhanced?: boolean;
+		} = {},
+	) =>
+		api<{ status: string; job: Job }>(`/api/projects/${projectId}/clips/${clipId}/generate-voice`, {
+			method: 'POST',
+			body: JSON.stringify(payload),
+		}),
+	generateDialogue: (
+		projectId: number,
+		payload: {
+			engine?: 'higgs' | 'fish';
+			voice_option?: 'reference' | 'male' | 'female';
+			enhanced?: boolean;
+		} = {},
+	) =>
+		api<{ status: string; total_queued: number; jobs: Job[] }>(`/api/projects/${projectId}/generate-dialogue`, {
+			method: 'POST',
+			body: JSON.stringify(payload),
+		}),
 };
 
 export const settings = {

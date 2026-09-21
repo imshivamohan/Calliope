@@ -39,6 +39,7 @@ CREATE TABLE IF NOT EXISTS characters (
     portrait_path TEXT,
     sheet_path TEXT,
     consistency_prompt TEXT,
+    voice_sample_path TEXT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
@@ -101,6 +102,7 @@ CREATE TABLE IF NOT EXISTS clips (
     duration_sec INTEGER,
     workflow_id INTEGER,
     clip_path TEXT,
+    audio_path TEXT,
     video_settings_json TEXT,
     chain_from_prev INTEGER NOT NULL DEFAULT 0,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
@@ -111,7 +113,7 @@ CREATE INDEX IF NOT EXISTS idx_clips_project ON clips(project_id);
 CREATE TABLE IF NOT EXISTS workflows (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     name TEXT NOT NULL,
-    kind TEXT NOT NULL CHECK(kind IN ('image', 'video')),
+    kind TEXT NOT NULL CHECK(kind IN ('image', 'video', 'audio')),
     workflow_json TEXT NOT NULL,
     input_node_map TEXT,
     output_node_name TEXT,
@@ -369,6 +371,37 @@ async def migrate_db(db_path: Path) -> None:
     project_cols = {r[1] for r in conn.execute("PRAGMA table_info(projects)").fetchall()}
     if "cover_path" not in project_cols:
         conn.execute("ALTER TABLE projects ADD COLUMN cover_path TEXT")
+    char_cols = {r[1] for r in conn.execute("PRAGMA table_info(characters)").fetchall()}
+    if "voice_sample_path" not in char_cols:
+        conn.execute("ALTER TABLE characters ADD COLUMN voice_sample_path TEXT")
+    clip_cols = {r[1] for r in conn.execute("PRAGMA table_info(clips)").fetchall()}
+    if "audio_path" not in clip_cols:
+        conn.execute("ALTER TABLE clips ADD COLUMN audio_path TEXT")
+
+    # Migrate workflows table CHECK constraint to allow 'audio'
+    wf_schema = conn.execute("SELECT sql FROM sqlite_master WHERE type='table' AND name='workflows'").fetchone()
+    if wf_schema and "CHECK(kind IN ('image', 'video'))" in wf_schema[0]:
+        conn.execute("PRAGMA foreign_keys = OFF")
+        conn.execute("""
+            CREATE TABLE workflows_new (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                name TEXT NOT NULL,
+                kind TEXT NOT NULL CHECK(kind IN ('image', 'video', 'audio')),
+                workflow_json TEXT NOT NULL,
+                input_node_map TEXT,
+                output_node_name TEXT,
+                input_schema TEXT,
+                output_schema TEXT,
+                description TEXT,
+                prompt_profile TEXT NOT NULL DEFAULT 'prose',
+                is_enabled INTEGER NOT NULL DEFAULT 1,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )
+        """)
+        conn.execute("INSERT INTO workflows_new SELECT * FROM workflows")
+        conn.execute("DROP TABLE workflows")
+        conn.execute("ALTER TABLE workflows_new RENAME TO workflows")
+        conn.execute("PRAGMA foreign_keys = ON")
     # Legacy canvases carry generic titles ("Untitled Canvas" or an older
     # iteration's "Project canvas"); name them after what they show
     # (project, else session). New canvases derive at create time.
@@ -417,11 +450,11 @@ def ensure_default_clip(conn: sqlite3.Connection, scene_id: int, project_id: int
 # still point at the old install root and /api/file rejects them (403).
 _PATH_COLUMNS = {
     "projects": ["cover_path"],
-    "characters": ["portrait_path", "sheet_path"],
+    "characters": ["portrait_path", "sheet_path", "voice_sample_path"],
     "locations": ["reference_image_path"],
     "items": ["reference_image_path"],
     "scenes": ["env_image_path", "video_path"],
-    "clips": ["clip_path"],
+    "clips": ["clip_path", "audio_path"],
     "canvas_node": ["artifact_path"],
     "shot_capture": ["file_path"],
 }

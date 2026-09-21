@@ -28,6 +28,7 @@ class SettingsUpdate(BaseModel):
     llm_active_id: str | None = None
     agent_llm_assignments: dict[str, str | None] | None = None
     comfyui_base_url: str | None = None
+    comfyui_audio_base_url: str | None = None
     data_dir: str | None = None
     assets_dir: str | None = None
     queue_concurrency: int | None = Field(None, ge=1, le=8)

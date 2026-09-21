@@ -2,13 +2,13 @@
 	/**
 	 * ShotBrief — the selected clip's production brief in the Video composer.
 	 *
-	 * Clips are render units: each performs one beat of a scene. Without this
-	 * panel the per-clip content (what the camera sees, the shot size, the
-	 * dialog lines it carries) was only visible in the monitor's empty state —
-	 * truncated, and gone as soon as a render existed. Surfacing it here is
-	 * what tells a user what to write into the workflow's prompt field.
+	 * Displays shot details, action prompt, audio dialogue playback,
+	 * voice cloning/TTS controls with reference vs default presets,
+	 * and quick copy & paste buttons.
 	 */
-	import type { Clip, Scene } from '$lib/api';
+	import { assetUrl, projects, type Clip, type Scene } from '$lib/api';
+	import { useQueryClient } from '@tanstack/svelte-query';
+	import { toast } from '$lib/toast';
 	import Icon from '$lib/components/ui/Icon.svelte';
 	import { t } from '$lib/i18n.svelte';
 
@@ -18,29 +18,139 @@
 		/** Display label, e.g. '#3.2'. */
 		label: string;
 		formatClock: (sec: number) => string;
+		projectId?: number;
+		onPastePrompt?: (text: string) => void;
 	}
 
-	let { clip, scene, label, formatClock }: Props = $props();
+	let { clip, scene, label, formatClock, projectId, onPastePrompt }: Props = $props();
+	const client = useQueryClient();
 
 	let open = $state(false);
 	let copied = $state(false);
-	let copiedDialog = $state(false);
+	let pasted = $state(false);
 	let copyTimer: ReturnType<typeof setTimeout> | null = null;
-	let copyDialogTimer: ReturnType<typeof setTimeout> | null = null;
+	let pasteTimer: ReturnType<typeof setTimeout> | null = null;
+
+	let voiceEngine = $state<'higgs' | 'fish'>('higgs');
+	let voiceOption = $state<'reference' | 'female' | 'male'>('reference');
+	let enhanced = $state(true);
+	let generatingVoice = $state(false);
+
+	async function generateVoice() {
+		if (!projectId) return;
+		generatingVoice = true;
+		try {
+			await projects.generateClipVoice(projectId, clip.id, {
+				engine: voiceEngine,
+				voice_option: voiceOption,
+				enhanced,
+			});
+			const voiceName =
+				voiceOption === 'male'
+					? 'Default Male'
+					: voiceOption === 'female'
+						? 'Default Female'
+						: 'Character Reference';
+			toast.success(`Voice generation queued (${voiceName})`);
+			await client.invalidateQueries({ queryKey: ['project', projectId] });
+			await client.invalidateQueries({ queryKey: ['jobs', projectId] });
+		} catch (err) {
+			toast.error(err instanceof Error ? err.message : 'Failed to queue voice generation');
+		} finally {
+			generatingVoice = false;
+		}
+	}
 
 	const description = $derived((clip.description ?? '').trim());
 	/** Un-expanded (legacy) clips carry no per-shot description — fall back to the scene action. */
 	const sceneLevel = $derived(!description && Boolean((scene.action ?? '').trim()));
 	const body = $derived(description || (scene.action ?? '').trim());
 
-	/** Same contract as the backend's `_clip_dialog`: 1-based indexes into the non-empty dialog lines. */
+	function parseScreenplayTurns(rawText: string | null | undefined): string[] {
+		if (!rawText) return [];
+		const rawLines = rawText.split(/\r?\n/).map((l) => l.trim()).filter(Boolean);
+		const turns: string[] = [];
+		let currentSpeaker = '';
+		let currentCue = '';
+		let currentSpeech: string[] = [];
+
+		for (const line of rawLines) {
+			const mInline = line.match(/^(?:\[([^\]]+)\]|([A-Za-z0-9_'\s]{1,30}))\s*:\s*(.*)$/);
+			if (mInline) {
+				if (currentSpeech.length > 0 || currentSpeaker) {
+					const text = currentSpeech.join(' ').trim();
+					if (text) {
+						const prefix = currentSpeaker ? `${currentSpeaker}: ` : '';
+						const cue = currentCue ? `(${currentCue}) ` : '';
+						turns.push(`${prefix}${cue}${text}`);
+					}
+					currentSpeech = [];
+					currentCue = '';
+				}
+				currentSpeaker = (mInline[1] || mInline[2] || '').trim();
+				let rest = mInline[3].trim();
+				const cueM = rest.match(/^\(([^)]+)\)\s*(.*)$/);
+				if (cueM) {
+					currentCue = cueM[1].trim();
+					rest = cueM[2].trim();
+				}
+				if (rest) currentSpeech.push(rest);
+				continue;
+			}
+
+			const isName =
+				line === line.toUpperCase() &&
+				line.split(/\s+/).length <= 4 &&
+				!/[.!?,;]/.test(line.slice(-1)) &&
+				!line.startsWith('(');
+			if (isName) {
+				if (currentSpeech.length > 0 || currentSpeaker) {
+					const text = currentSpeech.join(' ').trim();
+					if (text) {
+						const prefix = currentSpeaker ? `${currentSpeaker}: ` : '';
+						const cue = currentCue ? `(${currentCue}) ` : '';
+						turns.push(`${prefix}${cue}${text}`);
+					}
+					currentSpeech = [];
+					currentCue = '';
+				}
+				currentSpeaker = line;
+				continue;
+			}
+
+			if (line.startsWith('(') && line.endsWith(')')) {
+				currentCue = line.slice(1, -1).trim();
+				continue;
+			}
+
+			currentSpeech.push(line);
+		}
+
+		if (currentSpeech.length > 0 || currentSpeaker) {
+			const text = currentSpeech.join(' ').trim();
+			if (text) {
+				const prefix = currentSpeaker ? `${currentSpeaker}: ` : '';
+				const cue = currentCue ? `(${currentCue}) ` : '';
+				turns.push(`${prefix}${cue}${text}`);
+			}
+		}
+
+		return turns.length > 0 ? turns : rawLines;
+	}
+
+	/** Dialogue lines this clip covers: resolves 1-based indexes into structured dialogue turns. */
 	const coveredLines = $derived.by(() => {
 		const covered = clip.dialog_lines_covered;
+		const turns = parseScreenplayTurns(scene.dialog);
+		if (!turns.length) return [];
 		if (!covered || covered.length === 0) return [];
-		const lines = (scene.dialog ?? '').split(/\r?\n/).filter((l) => l.trim());
-		return covered
-			.filter((i) => Number.isInteger(i) && i >= 1 && i <= lines.length)
-			.map((i) => lines[i - 1]);
+		const picked = covered
+			.filter((i) => Number.isInteger(i) && i >= 1 && i <= turns.length)
+			.map((i) => turns[i - 1]);
+		if (picked.length === 0 && turns.length === 1) {
+			return turns;
+		}
+		return picked;
 	});
 
 	const shotSizeLabel = $derived(
@@ -57,25 +167,14 @@
 		return parts.join('\n\n');
 	});
 
-	async function copyCombined() {
-		if (!combinedText) return;
+	async function copyImageDescription() {
+		if (!body) return;
 		try {
-			await navigator.clipboard.writeText(combinedText);
+			await navigator.clipboard.writeText(body);
 			copied = true;
 			if (copyTimer) clearTimeout(copyTimer);
 			copyTimer = setTimeout(() => (copied = false), 1500);
-		} catch {
-			/* clipboard blocked (insecure context) — leave the button as-is */
-		}
-	}
-
-	async function copyDialogOnly() {
-		if (coveredLines.length === 0) return;
-		try {
-			await navigator.clipboard.writeText(coveredLines.join('\n'));
-			copiedDialog = true;
-			if (copyDialogTimer) clearTimeout(copyDialogTimer);
-			copyDialogTimer = setTimeout(() => (copiedDialog = false), 1500);
+			toast.success('Image description copied');
 		} catch {
 			/* clipboard blocked */
 		}
@@ -88,26 +187,25 @@
 		{#if shotSizeLabel}
 			<span class="pill">{shotSizeLabel}</span>
 		{/if}
+		{#if clip.chain_from_prev}
+			<span class="pill chained" title={t('shotBrief.chainFromPrev')}>🔗 {t('shotBrief.chainFromPrev')}</span>
+		{/if}
 		<span class="dur mono">{formatClock(clip.duration_sec || 5)}</span>
 		<span class="grow"></span>
 		<button
 			type="button"
 			class="icon-btn"
-			disabled={!combinedText}
-			title={copied
-				? t('shotBrief.copied')
-				: coveredLines.length > 0
-					? t('shotBrief.copyCombinedTitle')
-					: t('shotBrief.copyTitle')}
-			aria-label={coveredLines.length > 0 ? t('shotBrief.copyCombinedTitle') : t('shotBrief.copyTitle')}
-			onclick={copyCombined}
+			disabled={!body}
+			title={copied ? t('shotBrief.copied') : 'Copy image description'}
+			aria-label="Copy image description"
+			onclick={copyImageDescription}
 		>
 			<Icon name={copied ? 'check' : 'copy'} size={13} />
 			<span class="icon-btn-text">{copied ? t('shotBrief.copied') : t('shotBrief.copy')}</span>
 		</button>
 		<button
 			type="button"
-			class="icon-btn"
+			class="icon-btn toggle-btn"
 			class:open
 			aria-expanded={open}
 			title={open ? t('shotBrief.collapse') : t('shotBrief.expand')}
@@ -116,6 +214,56 @@
 			<Icon name={open ? 'chevron-up' : 'chevron-down'} size={13} />
 		</button>
 	</div>
+
+	<!-- Prominent Audio Playback: always accessible before generating video -->
+	{#if clip.audio_path}
+		<div class="audio-playback-banner">
+			<div class="audio-playback-header">
+				<span class="audio-tag"><Icon name="mic" size={13} /> {t('shotBrief.dialogAudio')}</span>
+				<span class="audio-hint">Preview before video generation</span>
+			</div>
+			<!-- svelte-ignore a11y_media_has_caption -->
+			<audio controls src={assetUrl(clip.audio_path)} preload="metadata" class="audio-player"></audio>
+		</div>
+	{/if}
+
+	<!-- Voice Generation Toolbar (Reference vs Default Male/Female + Regenerate) -->
+	{#if projectId && (coveredLines.length > 0 || clip.audio_path)}
+		<div class="voice-toolbar">
+			<div class="voice-opts-row">
+				<div class="voice-picker" role="radiogroup" aria-label="Voice Selection">
+					<label class="voice-opt" class:active={voiceOption === 'reference'} title="Use character's recorded reference sample">
+						<input type="radio" bind:group={voiceOption} value="reference" />
+						<span>Reference</span>
+					</label>
+					<label class="voice-opt" class:active={voiceOption === 'female'} title="Default clear female voice (WomanVoice6Sec.mp3)">
+						<input type="radio" bind:group={voiceOption} value="female" />
+						<span>Default Female</span>
+					</label>
+					<label class="voice-opt" class:active={voiceOption === 'male'} title="Default warm male voice (ManVoice42Sec.mp3)">
+						<input type="radio" bind:group={voiceOption} value="male" />
+						<span>Default Male</span>
+					</label>
+				</div>
+			</div>
+			<div class="voice-actions-row">
+				<label class="enhanced-toggle" title="Enhance prompt with Higgs expressive prosody & natural pause control tags">
+					<input type="checkbox" bind:checked={enhanced} />
+					<span>Higgs Expressive</span>
+				</label>
+				<button
+					type="button"
+					class="voice-gen-btn"
+					class:regenerate={Boolean(clip.audio_path)}
+					disabled={generatingVoice}
+					onclick={generateVoice}
+				>
+					<Icon name={generatingVoice ? 'sparkle' : clip.audio_path ? 'refresh' : 'mic'} size={12} />
+					<span>{generatingVoice ? t('shotBrief.generatingVoice') : (clip.audio_path ? 'Regenerate Voice' : t('shotBrief.generateVoice'))}</span>
+				</button>
+			</div>
+		</div>
+	{/if}
 
 	<p class="desc" class:clamped={!open}>
 		{#if body}
@@ -138,15 +286,6 @@
 			<div class="block">
 				<div class="block-header">
 					<span class="k">{t('shotBrief.dialogKey')}</span>
-					<button
-						type="button"
-						class="mini-copy-btn"
-						title={copiedDialog ? t('shotBrief.copied') : t('shotBrief.copyDialogTitle')}
-						onclick={copyDialogOnly}
-					>
-						<Icon name={copiedDialog ? 'check' : 'copy'} size={11} />
-						<span>{copiedDialog ? t('shotBrief.copied') : t('shotBrief.copy')}</span>
-					</button>
 				</div>
 				<pre class="dialog">{coveredLines.join('\n')}</pre>
 			</div>
@@ -173,13 +312,16 @@
 		background: var(--bg-surface);
 		padding: 8px 10px;
 		margin: 0;
+		display: flex;
+		flex-direction: column;
+		gap: 6px;
 	}
 
 	.head {
 		display: flex;
 		align-items: center;
-		gap: 8px;
-		min-height: 20px;
+		gap: 6px;
+		min-height: 24px;
 	}
 
 	.label {
@@ -190,7 +332,7 @@
 	}
 
 	.pill {
-		padding: 1px 8px;
+		padding: 1px 7px;
 		border-radius: 999px;
 		border: 1px solid var(--border);
 		background: var(--bg-elevated);
@@ -219,7 +361,7 @@
 		align-items: center;
 		gap: 4px;
 		height: 24px;
-		padding: 0 8px;
+		padding: 0 7px;
 		font: inherit;
 		font-size: 11px;
 		font-weight: 600;
@@ -229,6 +371,7 @@
 		border-radius: var(--radius-sm);
 		cursor: pointer;
 		flex-shrink: 0;
+		transition: all 0.15s ease;
 	}
 
 	.icon-btn:hover:not(:disabled),
@@ -251,9 +394,155 @@
 		line-height: 1;
 	}
 
+	.audio-playback-banner {
+		display: flex;
+		flex-direction: column;
+		gap: 4px;
+		background: rgba(var(--accent-rgb, 99, 102, 241), 0.06);
+		border: 1px solid rgba(var(--accent-rgb, 99, 102, 241), 0.25);
+		border-radius: var(--radius-sm);
+		padding: 6px 8px;
+	}
+
+	.audio-playback-header {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+	}
+
+	.audio-tag {
+		display: inline-flex;
+		align-items: center;
+		gap: 4px;
+		font-size: 10.5px;
+		font-weight: 700;
+		color: var(--accent);
+		text-transform: uppercase;
+		letter-spacing: 0.05em;
+	}
+
+	.audio-hint {
+		font-size: 10px;
+		color: var(--text-muted);
+	}
+
+	.audio-player {
+		width: 100%;
+		height: 28px;
+		outline: none;
+	}
+
+	.voice-toolbar {
+		display: flex;
+		flex-direction: column;
+		gap: 6px;
+		background: var(--bg-elevated);
+		border: 1px solid var(--border);
+		border-radius: var(--radius-sm);
+		padding: 6px 8px;
+	}
+
+	.voice-opts-row {
+		display: flex;
+		align-items: center;
+		gap: 6px;
+	}
+
+	.voice-picker {
+		display: flex;
+		align-items: center;
+		gap: 4px;
+		flex-wrap: wrap;
+		width: 100%;
+	}
+
+	.voice-opt {
+		display: inline-flex;
+		align-items: center;
+		gap: 4px;
+		font-size: 10px;
+		font-weight: 600;
+		padding: 2px 7px;
+		border-radius: var(--radius-sm);
+		background: var(--bg-surface);
+		border: 1px solid var(--border);
+		cursor: pointer;
+		color: var(--text-secondary);
+		user-select: none;
+		transition: all 0.15s ease;
+	}
+
+	.voice-opt.active {
+		border-color: var(--accent);
+		color: var(--accent);
+		background: rgba(var(--accent-rgb, 99, 102, 241), 0.12);
+		font-weight: 700;
+	}
+
+	.voice-opt input {
+		margin: 0;
+		cursor: pointer;
+		display: none;
+	}
+
+	.voice-actions-row {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: 6px;
+	}
+
+	.enhanced-toggle {
+		display: inline-flex;
+		align-items: center;
+		gap: 5px;
+		font-size: 10.5px;
+		font-weight: 600;
+		color: var(--text-secondary);
+		cursor: pointer;
+		user-select: none;
+	}
+
+	.enhanced-toggle input {
+		cursor: pointer;
+		margin: 0;
+		accent-color: var(--accent);
+	}
+
+	.voice-gen-btn {
+		display: inline-flex;
+		align-items: center;
+		gap: 4px;
+		height: 24px;
+		padding: 0 10px;
+		font: inherit;
+		font-size: 11px;
+		font-weight: 600;
+		color: #fff;
+		background: var(--accent);
+		border: none;
+		border-radius: var(--radius-sm);
+		cursor: pointer;
+		transition: opacity 0.15s;
+		flex-shrink: 0;
+	}
+
+	.voice-gen-btn:hover:not(:disabled) {
+		opacity: 0.9;
+	}
+
+	.voice-gen-btn.regenerate {
+		background: #2563eb;
+	}
+
+	.voice-gen-btn:disabled {
+		opacity: 0.6;
+		cursor: default;
+	}
+
 	.desc {
-		margin: 6px 0 0;
-		font-size: 12.5px;
+		margin: 0;
+		font-size: 12px;
 		line-height: 1.45;
 		color: var(--text-secondary);
 		white-space: pre-wrap;
@@ -273,21 +562,22 @@
 	}
 
 	.note {
-		margin: 8px 0 0;
+		margin: 0;
 		font-size: 11.5px;
 		line-height: 1.45;
 		color: var(--text-muted);
 	}
 
 	.block {
-		margin-top: 8px;
+		display: flex;
+		flex-direction: column;
+		gap: 4px;
 	}
 
 	.block-header {
 		display: flex;
 		align-items: center;
 		justify-content: space-between;
-		margin-bottom: 4px;
 	}
 
 	.block .k {
@@ -297,27 +587,6 @@
 		letter-spacing: 0.06em;
 		text-transform: uppercase;
 		color: var(--text-muted);
-	}
-
-	.mini-copy-btn {
-		display: inline-flex;
-		align-items: center;
-		gap: 4px;
-		background: var(--bg-elevated);
-		border: 1px solid var(--border);
-		padding: 2px 7px;
-		border-radius: var(--radius-sm);
-		font-size: 10px;
-		font-weight: 600;
-		color: var(--text-secondary);
-		cursor: pointer;
-		line-height: 1;
-		transition: color 0.15s, border-color 0.15s;
-	}
-
-	.mini-copy-btn:hover {
-		color: var(--text-primary);
-		border-color: var(--text-muted);
 	}
 
 	.dialog {
@@ -352,5 +621,11 @@
 
 	.mono {
 		font-family: var(--font-mono);
+	}
+
+	.pill.chained {
+		background: rgba(var(--accent-rgb, 99, 102, 241), 0.15);
+		border-color: var(--accent);
+		color: var(--accent);
 	}
 </style>

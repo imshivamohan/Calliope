@@ -114,6 +114,7 @@ class Settings(BaseSettings):
     agent_llm_assignments: dict[str, str | None] = Field(default_factory=dict)
 
     comfyui_base_url: str = "http://127.0.0.1:8188"
+    comfyui_audio_base_url: str = "http://127.0.0.1:8189"
     # Comfy is HTTP-only (upload / prompt / history / view). No local input/output dirs.
 
     queue_concurrency: int = 1
@@ -323,6 +324,7 @@ class Settings(BaseSettings):
             "llm_active_id": self.llm_active_id,
             "agent_llm_assignments": dict(self.agent_llm_assignments or {}),
             "comfyui_base_url": self.comfyui_base_url,
+            "comfyui_audio_base_url": self.comfyui_audio_base_url,
             "queue_concurrency": self.queue_concurrency,
             "queue_poll_interval_sec": self.queue_poll_interval_sec,
             "queue_poll_timeout_sec": self.queue_poll_timeout_sec,
@@ -408,6 +410,7 @@ class Settings(BaseSettings):
             "llm_active_id": self.llm_active_id,
             "agent_llm_assignments": dict(self.agent_llm_assignments or {}),
             "comfyui_base_url": self.comfyui_base_url,
+            "comfyui_audio_base_url": self.comfyui_audio_base_url,
             "queue_concurrency": self.queue_concurrency,
             "queue_poll_interval_sec": self.queue_poll_interval_sec,
             "queue_poll_timeout_sec": self.queue_poll_timeout_sec,

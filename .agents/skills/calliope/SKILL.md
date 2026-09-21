@@ -109,15 +109,29 @@ For complete database schema tables (all 19 tables), configuration properties, a
   - **Allocates Dialogue**: Maps exact dialogue lines to each clip (`dialog_lines_covered`) using 1-based indexing.
   - **Assigns Cinematic Shot Sizes**: Close-Up (CU), Medium Close-Up (MCU), Medium Shot (MS), Wide Shot (WS), Over-the-Shoulder (OTS), Point of View (POV).
 
-### Feature 5: Stage 4 — Video Generation Stage
-- **Shot Brief Panel**: Top banner displays the selected clip's `#Scene.Clip` label, shot size, duration, action description, performed dialogue, and characters. Includes 1-click clipboard copy.
-- **Two-Column Studio Layout**: Player, filmstrip, and screenplay drawer on the left; generation inspector and prompt review on the right.
+### Feature 5: Stage 4 — Video & Audio Generation Stage
+- **Dual ComfyUI Architecture**: Visual jobs route to port `8188` (RTX 5090: MiniMax H3, Wan 2.2, Krea 2); audio jobs route to port `8189` (`ComfyUI_AD`: Higgs Audio v3, Whisper, voice cloning).
+- **Higgs Audio v3 Dialogue Synthesis**:
+  - Voice Cloning: Uses character reference voice (`voice_sample_path`), or default male (`ManVoice42Sec.mp3`) / female (`WomanVoice6Sec.mp3`) presets.
+  - Automatic Cue Grouping: Parses screenplay format, strips numeric tokens (preventing "one" / "oh" bugs), and maps cues (`<|style:whispering|>`, `<|sfx:laughter|>`).
+  - Dialogue Length Calculation: `coverage_agent` sizes clip durations based on estimated speech length.
+- **Shot Brief Panel**:
+  - Displays `#Scene.Clip`, shot size, duration, action description, and characters.
+  - **Single "Copy Prompt" Button**: Copies ONLY visual action descriptions (`body`), omitting dialogue.
+  - **Pre-Video Audio Player & Regenerate**: Inline `<audio controls>` banner plays dialogue before video generation, with voice mode picker (`Reference`, `Default Female`, `Default Male`) and **Regenerate Voice** action.
+- **OmniComposer Ergonomics**:
+  - **"Describe Image"** header with 1-click **Paste** button.
+  - **"Reference Inputs"** tiles with 1-click **Paste** button and strict media-type enforcement (rejects audio from image/video slots).
+- **Instant Video-Audio Muxing**: Backend queue worker automatically muxes `clip.audio_path` into the rendered video with FFmpeg, enabling instant playback with voice.
 - **Prompt Review Gate**: Clicking Generate displays exact payload for `(Input:prompt)`. Allows inline editing, LLM regeneration, and saving drafts. Batch **Generate All** honors saved drafts.
 - **Continue from Previous Clip (Video Extend)**:
   - Enables long continuous takes without hard cuts using extend-capable models (e.g. MiniMax H3 Extend).
   - Requires workflow node tagged `(Input:video)` (`LoadVideo`).
   - Clip Source Picker: **Auto** (dynamic timeline predecessor), **Upload file**, or **From timeline**.
 - **Render History**: "View prompt & inputs" drawer displays past render job chips, payloads, and "Copy settings to form" recall.
+
+For the dedicated operational guide, audio header repair runbook, and pros/cons analysis, see:
+- [Production Audio-Video Pipeline Guide](../calliope-production-pipeline/SKILL.md)
 
 ### Feature 6: Film View & Master FFmpeg Export
 - **Majority-FPS Conformance**: Probes all clips with `ffprobe`; exports at the majority clip frame rate (e.g., 24 fps stays 24 fps), eliminating frame pacing judder.

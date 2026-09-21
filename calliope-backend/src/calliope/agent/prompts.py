@@ -617,7 +617,12 @@ def item_image_prompt(item: dict[str, Any]) -> str:
     return item_reference_prompt(item)
 
 
-def scene_video_prompt(scene: dict[str, Any], characters: list[dict[str, Any]]) -> str:
+def scene_video_prompt(
+    scene: dict[str, Any],
+    characters: list[dict[str, Any]],
+    *,
+    include_dialog: bool = True,
+) -> str:
     char_bits = ", ".join(
         f"{c.get('name')}: {c.get('consistency_prompt') or c.get('appearance') or ''}"
         for c in characters
@@ -625,7 +630,7 @@ def scene_video_prompt(scene: dict[str, Any], characters: list[dict[str, Any]]) 
     parts = [
         scene.get("heading") or "",
         scene.get("action") or "",
-        scene.get("dialog") or "",
+        (scene.get("dialog") or "") if include_dialog else "",
         f"featuring {char_bits}" if char_bits else "",
         "cinematic motion, coherent continuity",
     ]

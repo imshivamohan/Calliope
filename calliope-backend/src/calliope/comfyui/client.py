@@ -113,6 +113,25 @@ class ComfyUIClient:
         sub = result.get("subfolder") or subfolder
         return f"{sub}/{name}" if sub else name
 
+    @staticmethod
+    def _resolve_media_path(raw: str) -> Path | None:
+        p = Path(raw)
+        if p.is_absolute() and p.exists():
+            return p
+        cleaned = raw.replace("\\", "/").lstrip("/\\")
+        cand = settings.assets_dir / cleaned
+        if cand.exists():
+            return cand
+        cand = settings.assets_dir / "uploads" / p.name
+        if cand.exists():
+            return cand
+        cand = settings.data_dir / cleaned
+        if cand.exists():
+            return cand
+        if p.exists():
+            return p.resolve()
+        return None
+
     async def prepare_media_inputs(self, workflow: dict[str, Any]) -> dict[str, Any]:
         """Upload local file paths referenced in LoadImage / LoadAudio / LoadVideo nodes."""
         for _node_id, node in workflow.items():
@@ -123,8 +142,13 @@ class ComfyUIClient:
             if class_type in IMAGE_CLASSES:
                 image = inputs.get("image")
                 if isinstance(image, str) and self._looks_like_local_path(image):
-                    path = Path(image)
-                    if path.exists():
+                    path = self._resolve_media_path(image)
+                    if path:
+                        if path.suffix.lower() in (".mp3", ".wav", ".aac", ".ogg", ".flac", ".m4a", ".wma"):
+                            raise ValueError(
+                                f"Node '{_node_id}' ({class_type}) is an image input, but was given audio file '{path.name}'. "
+                                "Please select or paste an image reference (e.g. character sheet or environment image)."
+                            )
                         inputs["image"] = await self.upload_image(path)
                         node["inputs"] = inputs
             elif class_type in AUDIO_CLASSES:
@@ -138,16 +162,16 @@ class ComfyUIClient:
                 if audio_key:
                     audio = inputs[audio_key]
                     if isinstance(audio, str) and self._looks_like_local_path(audio):
-                        path = Path(audio)
-                        if path.exists():
+                        path = self._resolve_media_path(audio)
+                        if path:
                             inputs[audio_key] = await self.upload_audio(path)
                             node["inputs"] = inputs
             elif class_type in VIDEO_CLASSES:
                 field = "file" if class_type in VIDEO_FILE_CLASSES else "video"
                 media = inputs.get(field)
                 if isinstance(media, str) and self._looks_like_local_path(media):
-                    path = Path(media)
-                    if path.exists():
+                    path = self._resolve_media_path(media)
+                    if path:
                         inputs[field] = await self.upload_video(path)
                         node["inputs"] = inputs
         return workflow
@@ -201,7 +225,7 @@ class ComfyUIClient:
     def extract_outputs(self, history: dict[str, Any]) -> list[dict[str, str]]:
         outputs: list[dict[str, str]] = []
         for _node_id, node_out in (history.get("outputs") or {}).items():
-            for key in ("images", "gifs", "videos"):
+            for key in ("images", "gifs", "videos", "audio"):
                 for item in node_out.get(key) or []:
                     outputs.append(
                         {

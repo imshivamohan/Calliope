@@ -46,6 +46,7 @@
 		llm_active_id: 'llm',
 		llm_api_key: 'llm',
 		comfyui_base_url: 'comfy',
+		comfyui_audio_base_url: 'comfy',
 		dry_run: 'comfy',
 		queue_concurrency: 'queue',
 		queue_poll_interval_sec: 'queue',
@@ -462,6 +463,16 @@
 								oninput={(e) => (draft.comfyui_base_url = e.currentTarget.value)}
 							/>
 							<p class="field-hint">{t('settings.comfyHint')}</p>
+						</label>
+						<label class="field">
+							<span class="field-label">{t('settings.comfyAudioUrl')}</span>
+							<input
+								class="field-input"
+								value={String(fieldValue('comfyui_audio_base_url', s.comfyui_audio_base_url ?? 'http://127.0.0.1:8189'))}
+								oninput={(e) => (draft.comfyui_audio_base_url = e.currentTarget.value)}
+								placeholder="http://127.0.0.1:8189"
+							/>
+							<p class="field-hint">{t('settings.comfyAudioHint')}</p>
 						</label>
 						<label class="check">
 							<input

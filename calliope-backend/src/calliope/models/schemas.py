@@ -77,6 +77,7 @@ class CharacterCreate(BaseModel):
     appearance: str | None = None
     personality: str | None = None
     consistency_prompt: str | None = None
+    voice_sample_path: str | None = None
 
 
 class CharacterUpdate(BaseModel):
@@ -88,6 +89,7 @@ class CharacterUpdate(BaseModel):
     consistency_prompt: str | None = None
     portrait_path: str | None = None
     sheet_path: str | None = None
+    voice_sample_path: str | None = None
 
 
 class LocationCreate(BaseModel):

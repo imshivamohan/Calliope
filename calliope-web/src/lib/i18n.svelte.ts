@@ -10,7 +10,7 @@ import { storageGet, storageSet } from './storage';
 
 export type Language = 'en' | 'zh' | 'es' | 'fr' | 'de' | 'ja' | 'ko';
 
-export type Dict = typeof en;
+export type Dict = Record<string, string>;
 
 const dictionaries: Record<Language, Record<string, string>> = { en, zh, es, fr, de, ja, ko };
 

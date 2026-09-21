@@ -11,6 +11,7 @@
 	import Icon from '$lib/components/ui/Icon.svelte';
 	import Spinner from '$lib/components/ui/Spinner.svelte';
 	import { acceptForKind } from '$lib/comfy/useUpload.svelte';
+	import { toast } from '$lib/toast';
 	import { t } from '$lib/i18n.svelte';
 
 	interface Props {
@@ -103,6 +104,82 @@
 	);
 
 	const accept = $derived(acceptForKind(input.kind));
+
+	let tilePasted = $state(false);
+	let tilePasteTimer: ReturnType<typeof setTimeout> | null = null;
+
+	async function pasteReferenceFromClipboard(e: MouseEvent) {
+		e.stopPropagation();
+		try {
+			if (navigator.clipboard.read) {
+				try {
+					const items = await navigator.clipboard.read();
+					for (const item of items) {
+						const imageType = item.types.find((t) => t.startsWith('image/'));
+						if (imageType) {
+							const blob = await item.getType(imageType);
+							const ext = imageType.split('/')[1] || 'png';
+							const file = new File([blob], `pasted_ref_${Date.now()}.${ext}`, { type: imageType });
+							onselectFile(file);
+							tilePasted = true;
+							if (tilePasteTimer) clearTimeout(tilePasteTimer);
+							tilePasteTimer = setTimeout(() => (tilePasted = false), 1500);
+							toast.success('Pasted image from clipboard');
+							return;
+						}
+					}
+				} catch {
+					// Fall through to text
+				}
+			}
+
+			const text = (await navigator.clipboard.readText()).trim();
+			if (!text) {
+				toast.error('Clipboard is empty');
+				return;
+			}
+			const lower = text.toLowerCase();
+			const isAudioFile = /\.(mp3|wav|ogg|flac|m4a|aac|wma)(\?.*)?$/i.test(lower);
+			const isVideoFile = /\.(mp4|webm|mov|mkv|avi)(\?.*)?$/i.test(lower);
+			const isImageFile = /\.(png|jpg|jpeg|webp|gif|bmp|tiff)(\?.*)?$/i.test(lower) || text.startsWith('data:image/');
+
+			const matched = assetOptions.find(
+				(a) => a.path === text || a.label.toLowerCase() === text.toLowerCase() || a.path.includes(text),
+			);
+
+			if (isImageKind) {
+				if (isAudioFile || matched?.kind === 'audio') {
+					toast.error('This input requires an image reference, not audio.');
+					return;
+				}
+				if (isVideoFile || matched?.kind === 'video') {
+					toast.error('This input requires an image reference, not video.');
+					return;
+				}
+				if (!matched && !isImageFile) {
+					toast.error('Clipboard does not contain a valid image path or URL.');
+					return;
+				}
+			} else if (isVideoKind) {
+				if (isAudioFile || matched?.kind === 'audio') {
+					toast.error('This input requires a video reference, not audio.');
+					return;
+				}
+			}
+
+			if (matched) {
+				onselectAsset(matched.path);
+			} else {
+				onselectAsset(text);
+			}
+			tilePasted = true;
+			if (tilePasteTimer) clearTimeout(tilePasteTimer);
+			tilePasteTimer = setTimeout(() => (tilePasted = false), 1500);
+			toast.success('Pasted reference from clipboard');
+		} catch {
+			toast.error('Could not access clipboard');
+		}
+	}
 </script>
 
 <div class="tile-wrap">
@@ -156,6 +233,18 @@
 			<div class="tile-empty">
 				<Icon name="plus" size={20} />
 			</div>
+		{/if}
+
+		{#if !uploadingName}
+			<button
+				type="button"
+				class="tile-paste"
+				title="Paste image or reference from clipboard"
+				onclick={pasteReferenceFromClipboard}
+				aria-label="Paste reference from clipboard"
+			>
+				<Icon name={tilePasted ? 'check' : 'clipboard'} size={11} />
+			</button>
 		{/if}
 
 		{#if value && !uploadingName}
@@ -283,6 +372,7 @@
 		cursor: pointer;
 		opacity: 0;
 		transition: opacity 0.15s;
+		z-index: 2;
 	}
 
 	.tile:hover .tile-remove {
@@ -291,6 +381,36 @@
 
 	.tile-remove:hover {
 		background: var(--error);
+	}
+
+	.tile-paste {
+		position: absolute;
+		top: 4px;
+		left: 4px;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		width: 20px;
+		height: 20px;
+		border-radius: 9999px;
+		background: rgba(0, 0, 0, 0.65);
+		border: none;
+		color: white;
+		cursor: pointer;
+		opacity: 0;
+		transition: opacity 0.15s, background 0.15s;
+		z-index: 2;
+	}
+
+	.tile:hover .tile-paste,
+	.tile:not(.filled) .tile-paste {
+		opacity: 0.85;
+	}
+
+	.tile-paste:hover {
+		opacity: 1 !important;
+		background: var(--accent);
+		color: white;
 	}
 
 	.tile-label {

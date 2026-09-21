@@ -579,6 +579,51 @@
 			uploadingKey = null;
 		}
 	}
+
+	let voiceInput = $state<HTMLInputElement | null>(null);
+	let voiceTargetCharacter = $state<{ id: number; name: string } | null>(null);
+	let uploadingVoice = $state<number | null>(null);
+
+	function openVoiceUpload(char: { id: number; name: string }) {
+		voiceTargetCharacter = char;
+		voiceInput?.click();
+	}
+
+	async function onVoiceChosen(e: Event) {
+		const input = e.currentTarget as HTMLInputElement;
+		const file = input.files?.[0];
+		input.value = '';
+		const char = voiceTargetCharacter;
+		voiceTargetCharacter = null;
+		if (!file || !char) return;
+		uploadingVoice = char.id;
+		try {
+			const uploaded = await playgroundApi.upload(file);
+			if (uploaded.kind !== 'audio') {
+				toast.error(t('assets.toast.chooseAudio'));
+				return;
+			}
+			await projects.updateCharacter(projectId, char.id, { voice_sample_path: uploaded.path });
+			await client.invalidateQueries({ queryKey: ['assets', projectId] });
+			await client.invalidateQueries({ queryKey: ['project', projectId] });
+			toast.success(t('assets.toast.voiceAdded', { name: char.name }));
+		} catch (err) {
+			toast.error(err instanceof Error ? err.message : t('assets.toast.addVoiceFailed'));
+		} finally {
+			uploadingVoice = null;
+		}
+	}
+
+	async function removeVoiceSample(char: { id: number; name: string }) {
+		try {
+			await projects.updateCharacter(projectId, char.id, { voice_sample_path: null });
+			await client.invalidateQueries({ queryKey: ['assets', projectId] });
+			await client.invalidateQueries({ queryKey: ['project', projectId] });
+			toast.success(t('assets.voiceRemoved'));
+		} catch (err) {
+			toast.error(err instanceof Error ? err.message : 'Failed to remove voice');
+		}
+	}
 </script>
 
 <input
@@ -587,6 +632,13 @@
 	class="sr-only"
 	accept="image/png,image/jpeg,image/webp,image/gif,image/bmp"
 	onchange={onOwnImageChosen}
+/>
+<input
+	bind:this={voiceInput}
+	type="file"
+	class="sr-only"
+	accept="audio/*,.wav,.mp3,.flac,.ogg,.m4a"
+	onchange={onVoiceChosen}
 />
 
 <header class="stage-header">
@@ -917,6 +969,36 @@
 										<Icon name="retry" size={13} /> {t('common.retry')}
 									</Button>
 								{/if}
+							</div>
+
+							<div class="voice-card-row">
+								<div class="voice-card-header">
+									<span class="voice-tag"><Icon name="mic" size={11} /> {t('assets.voiceSample')}</span>
+									{#if char.voice_sample_path}
+										<button
+											type="button"
+											class="voice-remove-btn"
+											title={t('assets.removeVoice')}
+											onclick={() => removeVoiceSample(char)}
+										>
+											<Icon name="trash" size={11} />
+										</button>
+									{/if}
+								</div>
+								{#if char.voice_sample_path}
+									<!-- svelte-ignore a11y_media_has_caption -->
+									<audio controls src={assetUrl(char.voice_sample_path)} preload="none" class="voice-audio-mini"></audio>
+								{/if}
+								<Button
+									variant="secondary"
+									size="sm"
+									disabled={uploadingVoice === char.id}
+									loading={uploadingVoice === char.id}
+									onclick={() => openVoiceUpload(char)}
+								>
+									<Icon name="mic" size={13} />
+									{char.voice_sample_path ? t('assets.replaceVoice') : t('assets.uploadVoice')}
+								</Button>
 							</div>
 
 							{#if showCharPrompt}
@@ -1610,5 +1692,55 @@
 		clip: rect(0, 0, 0, 0);
 		white-space: nowrap;
 		border: 0;
+	}
+
+	.voice-card-row {
+		margin-top: 10px;
+		padding: 8px 10px;
+		background: var(--bg-surface);
+		border: 1px solid var(--border);
+		border-radius: var(--radius-sm);
+		display: flex;
+		flex-direction: column;
+		gap: 6px;
+	}
+
+	.voice-card-header {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+	}
+
+	.voice-tag {
+		display: inline-flex;
+		align-items: center;
+		gap: 4px;
+		font-size: 11px;
+		font-weight: 700;
+		color: var(--accent);
+		text-transform: uppercase;
+		letter-spacing: 0.04em;
+	}
+
+	.voice-remove-btn {
+		background: transparent;
+		border: none;
+		color: var(--text-muted);
+		cursor: pointer;
+		padding: 2px 4px;
+		border-radius: var(--radius-sm);
+		display: inline-flex;
+		align-items: center;
+		transition: color 0.15s;
+	}
+
+	.voice-remove-btn:hover {
+		color: var(--danger, #ef4444);
+	}
+
+	.voice-audio-mini {
+		width: 100%;
+		height: 28px;
+		outline: none;
 	}
 </style>
