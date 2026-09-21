@@ -1,0 +1,516 @@
+from __future__ import annotations
+
+import json
+import sqlite3
+from pathlib import Path
+from typing import Any
+
+SCHEMA = """
+CREATE TABLE IF NOT EXISTS projects (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    title TEXT NOT NULL,
+    idea TEXT,
+    genre TEXT,
+    tone TEXT,
+    target_duration TEXT,
+    cover_path TEXT,
+    status TEXT NOT NULL DEFAULT 'draft',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS story_beats (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    project_id INTEGER NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
+    order_index INTEGER NOT NULL,
+    title TEXT NOT NULL,
+    description TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS characters (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    project_id INTEGER NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
+    name TEXT NOT NULL,
+    role TEXT,
+    age TEXT,
+    appearance TEXT,
+    personality TEXT,
+    portrait_path TEXT,
+    sheet_path TEXT,
+    consistency_prompt TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS locations (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    project_id INTEGER NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
+    name TEXT NOT NULL,
+    description TEXT,
+    reference_image_path TEXT,
+    consistency_prompt TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS items (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    project_id INTEGER NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
+    name TEXT NOT NULL,
+    description TEXT,
+    reference_image_path TEXT,
+    consistency_prompt TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS scenes (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    project_id INTEGER NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
+    beat_id INTEGER REFERENCES story_beats(id) ON DELETE SET NULL,
+    order_index INTEGER NOT NULL,
+    heading TEXT,
+    action TEXT,
+    dialog TEXT,
+    duration_sec INTEGER,
+    workflow_id INTEGER,
+    env_image_path TEXT,
+    location_id INTEGER,
+    video_path TEXT,
+    video_settings_json TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS scene_characters (
+    scene_id INTEGER NOT NULL REFERENCES scenes(id) ON DELETE CASCADE,
+    character_id INTEGER NOT NULL REFERENCES characters(id) ON DELETE CASCADE,
+    PRIMARY KEY (scene_id, character_id)
+);
+
+-- Shot-level layer: one script scene expands into MANY renderable clips
+-- (coverage). The clip — not the scene — is the unit that gets generated,
+-- holds video settings, and lands in the export timeline. Scenes keep the
+-- screenplay content; every scene has >= 1 clip (a default clip mirrors the
+-- legacy 1:1 behavior for un-expanded projects).
+CREATE TABLE IF NOT EXISTS clips (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    scene_id INTEGER NOT NULL REFERENCES scenes(id) ON DELETE CASCADE,
+    project_id INTEGER NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
+    order_index INTEGER NOT NULL,
+    description TEXT,
+    shot_size TEXT,
+    dialog_lines_covered TEXT,
+    duration_sec INTEGER,
+    workflow_id INTEGER,
+    clip_path TEXT,
+    video_settings_json TEXT,
+    chain_from_prev INTEGER NOT NULL DEFAULT 0,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+CREATE INDEX IF NOT EXISTS idx_clips_scene ON clips(scene_id);
+CREATE INDEX IF NOT EXISTS idx_clips_project ON clips(project_id);
+
+CREATE TABLE IF NOT EXISTS workflows (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    name TEXT NOT NULL,
+    kind TEXT NOT NULL CHECK(kind IN ('image', 'video')),
+    workflow_json TEXT NOT NULL,
+    input_node_map TEXT,
+    output_node_name TEXT,
+    input_schema TEXT,
+    output_schema TEXT,
+    description TEXT,
+    prompt_profile TEXT NOT NULL DEFAULT 'prose',
+    is_enabled INTEGER NOT NULL DEFAULT 1,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS jobs (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    project_id INTEGER NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
+    scene_id INTEGER REFERENCES scenes(id) ON DELETE SET NULL,
+    clip_id INTEGER REFERENCES clips(id) ON DELETE SET NULL,
+    kind TEXT NOT NULL,
+    workflow_id INTEGER REFERENCES workflows(id) ON DELETE SET NULL,
+    status TEXT NOT NULL DEFAULT 'pending',
+    payload_json TEXT,
+    output_paths_json TEXT,
+    error TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    started_at TIMESTAMP,
+    completed_at TIMESTAMP,
+    retry_count INTEGER NOT NULL DEFAULT 0
+);
+
+CREATE TABLE IF NOT EXISTS agent_sessions (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    project_id INTEGER REFERENCES projects(id) ON DELETE SET NULL,
+    title TEXT NOT NULL DEFAULT 'New chat',
+    status TEXT NOT NULL DEFAULT 'idle' CHECK(status IN ('idle', 'running', 'error')),
+    origin TEXT NOT NULL DEFAULT 'chat' CHECK(origin IN ('chat', 'scene')),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+CREATE INDEX IF NOT EXISTS idx_agent_sessions_project ON agent_sessions(project_id);
+
+CREATE TABLE IF NOT EXISTS agent_messages (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    session_id INTEGER NOT NULL REFERENCES agent_sessions(id) ON DELETE CASCADE,
+    role TEXT NOT NULL CHECK(role IN ('user', 'assistant', 'tool', 'system')),
+    content TEXT NOT NULL DEFAULT '',
+    agent_name TEXT,
+    tool_name TEXT,
+    tool_args_json TEXT,
+    tool_result_json TEXT,
+    status TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+CREATE INDEX IF NOT EXISTS idx_agent_messages_session ON agent_messages(session_id);
+
+CREATE TABLE IF NOT EXISTS agent_events (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    session_id INTEGER NOT NULL REFERENCES agent_sessions(id) ON DELETE CASCADE,
+    seq INTEGER NOT NULL,
+    type TEXT NOT NULL,
+    data_json TEXT NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE(session_id, seq)
+);
+CREATE INDEX IF NOT EXISTS idx_agent_events_session ON agent_events(session_id);
+
+CREATE TABLE IF NOT EXISTS canvas (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    project_id INTEGER REFERENCES projects(id) ON DELETE CASCADE,
+    agent_session_id INTEGER REFERENCES agent_sessions(id) ON DELETE CASCADE,
+    title TEXT NOT NULL DEFAULT 'Untitled Canvas',
+    thumbnail_path TEXT,
+    viewport_json TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+CREATE INDEX IF NOT EXISTS idx_canvas_project ON canvas(project_id);
+CREATE INDEX IF NOT EXISTS idx_canvas_session ON canvas(agent_session_id);
+
+CREATE TABLE IF NOT EXISTS canvas_node (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    canvas_id INTEGER NOT NULL REFERENCES canvas(id) ON DELETE CASCADE,
+    type TEXT NOT NULL CHECK(type IN ('entity','image','video','text','workflow')),
+    title TEXT,
+    x REAL DEFAULT 0,
+    y REAL DEFAULT 0,
+    width REAL,
+    height REAL,
+    workflow_id INTEGER NULL,
+    artifact_path TEXT NULL,
+    job_id INTEGER NULL,
+    status TEXT NOT NULL DEFAULT 'idle',
+    input_values_json TEXT NOT NULL DEFAULT '{}',
+    entity_type TEXT NULL,
+    entity_id INTEGER NULL,
+    deleted INTEGER NOT NULL DEFAULT 0,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+CREATE INDEX IF NOT EXISTS idx_canvas_node_canvas ON canvas_node(canvas_id);
+
+CREATE TABLE IF NOT EXISTS canvas_edge (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    canvas_id INTEGER NOT NULL REFERENCES canvas(id) ON DELETE CASCADE,
+    src_node_id INTEGER NOT NULL REFERENCES canvas_node(id) ON DELETE CASCADE,
+    dst_node_id INTEGER NOT NULL REFERENCES canvas_node(id) ON DELETE CASCADE,
+    kind TEXT NOT NULL CHECK(kind IN ('data','link')),
+    label TEXT,
+    dst_role TEXT,
+    dst_comfy_node_id TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+CREATE INDEX IF NOT EXISTS idx_canvas_edge_canvas ON canvas_edge(canvas_id);
+CREATE INDEX IF NOT EXISTS idx_canvas_edge_src ON canvas_edge(src_node_id);
+CREATE INDEX IF NOT EXISTS idx_canvas_edge_dst ON canvas_edge(dst_node_id);
+
+CREATE TABLE IF NOT EXISTS agent_memory (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    scope TEXT NOT NULL CHECK(scope IN ('global','project')),
+    project_id INTEGER REFERENCES projects(id) ON DELETE CASCADE,
+    content TEXT NOT NULL,
+    kind TEXT NOT NULL DEFAULT 'preference' CHECK(kind IN ('preference','convention','correction')),
+    source TEXT NOT NULL DEFAULT 'agent' CHECK(source IN ('agent','user')),
+    use_count INTEGER NOT NULL DEFAULT 0,
+    last_used_at TIMESTAMP,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE(scope, project_id, content)
+);
+CREATE INDEX IF NOT EXISTS idx_agent_memory_scope ON agent_memory(scope, project_id);
+
+CREATE TABLE IF NOT EXISTS shot_composition (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    agent_session_id INTEGER UNIQUE REFERENCES agent_sessions(id) ON DELETE SET NULL,
+    title TEXT NOT NULL DEFAULT 'Untitled composition',
+    scene_json TEXT NOT NULL DEFAULT '{}',
+    capture_request_json TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS shot_capture (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    composition_id INTEGER NOT NULL REFERENCES shot_composition(id) ON DELETE CASCADE,
+    kind TEXT NOT NULL DEFAULT 'image' CHECK(kind IN ('image','video')),
+    label TEXT,
+    file_path TEXT,
+    meta_json TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+CREATE INDEX IF NOT EXISTS idx_shot_capture_composition ON shot_capture(composition_id);
+"""
+
+
+def get_db(db_path: Path) -> sqlite3.Connection:
+    conn = sqlite3.connect(db_path, timeout=10)
+    conn.row_factory = sqlite3.Row
+    # WAL: readers never block writers (the UI polls jobs/settings constantly),
+    # and busy_timeout makes writers wait instead of erroring on contention.
+    conn.execute("PRAGMA journal_mode = WAL")
+    conn.execute("PRAGMA busy_timeout = 10000")
+    conn.execute("PRAGMA foreign_keys = ON")
+    return conn
+
+
+def _sqlite_connect(path: Path) -> sqlite3.Connection:
+    return sqlite3.connect(path)
+
+
+async def migrate_db(db_path: Path) -> None:
+    db_path.parent.mkdir(parents=True, exist_ok=True)
+    conn = sqlite3.connect(db_path)
+    conn.executescript(SCHEMA)
+    # Additive migrations for existing DBs
+    # Dedupe guard: ARTIFACT nodes keyed by (canvas_id, job_id). Without the
+    # unique index, the agent's post_artifact_to_canvas and the frontend
+    # auto-materializer race and the canvas ends up with twin cards for one
+    # job (observed live). Existing duplicate pairs are cleaned up first
+    # (keep the lowest id), then the index enforces it forever. Scoped to
+    # image/video types only — workflow nodes also carry job_id (they track
+    # the job they launched) and MUST be allowed to coexist with the artifact
+    # node for the same job.
+    conn.execute(
+        """
+        DELETE FROM canvas_node
+        WHERE type IN ('image', 'video') AND job_id IS NOT NULL AND deleted = 0
+          AND id NOT IN (
+            SELECT MIN(id) FROM canvas_node
+            WHERE type IN ('image', 'video') AND job_id IS NOT NULL AND deleted = 0
+            GROUP BY canvas_id, job_id
+          )
+        """
+    )
+    conn.execute(
+        "CREATE UNIQUE INDEX IF NOT EXISTS uq_canvas_node_job "
+        "ON canvas_node(canvas_id, job_id) "
+        "WHERE deleted = 0 AND type IN ('image', 'video')"
+    )
+    cols = {r[1] for r in conn.execute("PRAGMA table_info(workflows)").fetchall()}
+    if "input_schema" not in cols:
+        conn.execute("ALTER TABLE workflows ADD COLUMN input_schema TEXT")
+    if "output_schema" not in cols:
+        conn.execute("ALTER TABLE workflows ADD COLUMN output_schema TEXT")
+    if "description" not in cols:
+        conn.execute("ALTER TABLE workflows ADD COLUMN description TEXT")
+    if "prompt_profile" not in cols:
+        conn.execute(
+            "ALTER TABLE workflows ADD COLUMN prompt_profile TEXT NOT NULL DEFAULT 'prose'"
+        )
+    scene_cols = {r[1] for r in conn.execute("PRAGMA table_info(scenes)").fetchall()}
+    if "location_id" not in scene_cols:
+        conn.execute("ALTER TABLE scenes ADD COLUMN location_id INTEGER")
+    if "video_path" not in scene_cols:
+        conn.execute("ALTER TABLE scenes ADD COLUMN video_path TEXT")
+    if "chain_from_prev" not in scene_cols:
+        conn.execute(
+            "ALTER TABLE scenes ADD COLUMN chain_from_prev INTEGER NOT NULL DEFAULT 0"
+        )
+    if "video_settings_json" not in scene_cols:
+        conn.execute("ALTER TABLE scenes ADD COLUMN video_settings_json TEXT")
+    # Clips layer: mirror each existing scene's production state into a
+    # default clip #1 so the 1:1 legacy behavior keeps working unchanged.
+    # Guarded on table emptiness — runs once, never touches clips the user
+    # (or the coverage pass) already created.
+    conn.execute(
+        """
+        INSERT INTO clips (scene_id, project_id, order_index, duration_sec,
+                           workflow_id, clip_path, video_settings_json, chain_from_prev)
+        SELECT s.id, s.project_id, 1, s.duration_sec, s.workflow_id,
+               s.video_path, s.video_settings_json, s.chain_from_prev
+        FROM scenes s
+        WHERE NOT EXISTS (SELECT 1 FROM clips c WHERE c.scene_id = s.id)
+        """
+    )
+    job_cols = {r[1] for r in conn.execute("PRAGMA table_info(jobs)").fetchall()}
+    if "clip_id" not in job_cols:
+        conn.execute("ALTER TABLE jobs ADD COLUMN clip_id INTEGER REFERENCES clips(id) ON DELETE SET NULL")
+        # Point existing video jobs at their scene's default clip so worker
+        # write-back keeps landing on the row the UI reads.
+        conn.execute(
+            """
+            UPDATE jobs SET clip_id = (
+                SELECT c.id FROM clips c WHERE c.scene_id = jobs.scene_id
+                ORDER BY c.order_index, c.id LIMIT 1
+            )
+            WHERE kind = 'video' AND scene_id IS NOT NULL AND clip_id IS NULL
+            """
+        )
+    # Build Scene's per-scene sessions: origin stamps WHERE a blind session was
+    # born ('chat' = user-created in AI Canvas, 'scene' = auto-created by the
+    # Build Scene rail). The session list excludes origin='scene' so scene
+    # sessions don't pollute the AI Canvas sidebar; Build Scene filters on it.
+    session_cols = {r[1] for r in conn.execute("PRAGMA table_info(agent_sessions)").fetchall()}
+    if "origin" not in session_cols:
+        conn.execute("ALTER TABLE agent_sessions ADD COLUMN origin TEXT NOT NULL DEFAULT 'chat'")
+        # Backfill: existing Scene · N sessions were born in Build Scene.
+        conn.execute("UPDATE agent_sessions SET origin = 'scene' WHERE title LIKE 'Scene · %'")
+    project_cols = {r[1] for r in conn.execute("PRAGMA table_info(projects)").fetchall()}
+    if "cover_path" not in project_cols:
+        conn.execute("ALTER TABLE projects ADD COLUMN cover_path TEXT")
+    # Legacy canvases carry generic titles ("Untitled Canvas" or an older
+    # iteration's "Project canvas"); name them after what they show
+    # (project, else session). New canvases derive at create time.
+    conn.execute(
+        """
+        UPDATE canvas SET title = COALESCE(
+            (SELECT p.title FROM projects p WHERE p.id = canvas.project_id),
+            (SELECT s.title FROM agent_sessions s WHERE s.id = canvas.agent_session_id),
+            'Canvas'
+        )
+        WHERE title IN ('Untitled Canvas', 'Project canvas')
+        """
+    )
+    conn.commit()
+    conn.close()
+
+
+def row_to_dict(row: sqlite3.Row) -> dict[str, Any]:
+    return {key: row[key] for key in row.keys()}
+
+
+def ensure_default_clip(conn: sqlite3.Connection, scene_id: int, project_id: int) -> None:
+    """Every scene keeps >= 1 clip: inserts default clip #1 when none exist.
+
+    The default inherits the scene's production fields (duration, workflow,
+    settings, chain) so an un-expanded project behaves exactly like the old
+    1:1 model. Called by every scene-creation path (router CRUD, script
+    generation, coverage expansion replacement).
+    """
+    conn.execute(
+        """
+        INSERT INTO clips (scene_id, project_id, order_index, description,
+                           duration_sec, workflow_id, clip_path, video_settings_json,
+                           chain_from_prev)
+        SELECT ?, ?, 1, NULL, duration_sec, workflow_id, video_path,
+               video_settings_json, chain_from_prev
+        FROM scenes s
+        WHERE s.id = ? AND s.project_id = ?
+          AND NOT EXISTS (SELECT 1 FROM clips WHERE scene_id = ?)
+        """,
+        (scene_id, project_id, scene_id, project_id, scene_id),
+    )
+
+
+# Columns that store absolute asset paths. When the app folder moves, these
+# still point at the old install root and /api/file rejects them (403).
+_PATH_COLUMNS = {
+    "projects": ["cover_path"],
+    "characters": ["portrait_path", "sheet_path"],
+    "locations": ["reference_image_path"],
+    "items": ["reference_image_path"],
+    "scenes": ["env_image_path", "video_path"],
+    "clips": ["clip_path"],
+    "canvas_node": ["artifact_path"],
+    "shot_capture": ["file_path"],
+}
+
+
+def _rebase_path(value: Any, data_dir: Path, assets_dir: Path) -> str | None:
+    """Rebase an absolute path from a previous install location onto current dirs.
+
+    Returns the rebased path, or None when the value is not a stale absolute
+    path (relative, already under data_dir, or has no 'assets' segment).
+    """
+    if not value or not isinstance(value, str):
+        return None
+    p = Path(value)
+    if not p.is_absolute():
+        return None
+    try:
+        p.resolve().relative_to(data_dir.resolve())
+        return None  # already under the current install
+    except (ValueError, OSError):
+        pass
+    parts_lower = [seg.lower() for seg in p.parts]
+    if "assets" not in parts_lower:
+        return None
+    idx = len(parts_lower) - 1 - parts_lower[::-1].index("assets")
+    rel = Path(*p.parts[idx + 1 :])
+    if not rel.parts:
+        return None
+    return str(assets_dir / rel)
+
+
+def rebase_stale_asset_paths(conn: sqlite3.Connection, data_dir: Path, assets_dir: Path) -> int:
+    """Rewrite stored asset paths left over from a previous install location.
+
+    Call after migrate_db (needs all columns to exist). Returns the number of
+    rewritten values; caller commits.
+    """
+    count = 0
+    for table, columns in _PATH_COLUMNS.items():
+        for col in columns:
+            rows = conn.execute(f"SELECT id, {col} FROM {table} WHERE {col} IS NOT NULL").fetchall()
+            for row in rows:
+                new = _rebase_path(row[col], data_dir, assets_dir)
+                if new and new != row[col]:
+                    conn.execute(f"UPDATE {table} SET {col} = ? WHERE id = ?", (new, row["id"]))
+                    count += 1
+    rows = conn.execute(
+        "SELECT id, output_paths_json FROM jobs WHERE output_paths_json IS NOT NULL"
+    ).fetchall()
+    for row in rows:
+        try:
+            paths = json.loads(row["output_paths_json"] or "[]")
+        except json.JSONDecodeError:
+            continue
+        if not isinstance(paths, list):
+            continue
+        new_paths = [_rebase_path(p, data_dir, assets_dir) or p for p in paths]
+        if new_paths != paths:
+            conn.execute(
+                "UPDATE jobs SET output_paths_json = ? WHERE id = ?",
+                (json.dumps(new_paths), row["id"]),
+            )
+            count += 1
+    # Scene/clip video settings embed absolute asset paths (ref images,
+    # uploaded clips) in input_values — rebase those too so a moved install
+    # keeps the saved setups working.
+    for table in ("scenes", "clips"):
+        rows = conn.execute(
+            f"SELECT id, video_settings_json FROM {table} WHERE video_settings_json IS NOT NULL"
+        ).fetchall()
+        for row in rows:
+            try:
+                data = json.loads(row["video_settings_json"] or "{}")
+            except json.JSONDecodeError:
+                continue
+            if not isinstance(data, dict):
+                continue
+            values = data.get("input_values")
+            if isinstance(values, dict):
+                data["input_values"] = {
+                    k: (_rebase_path(v, data_dir, assets_dir) or v if isinstance(v, str) else v)
+                    for k, v in values.items()
+                }
+            draft = data.get("prompt_draft")
+            if isinstance(draft, str) and not draft:
+                data.pop("prompt_draft", None)
+            conn.execute(
+                f"UPDATE {table} SET video_settings_json = ? WHERE id = ?",
+                (json.dumps(data), row["id"]),
+            )
+            count += 1
+    return count

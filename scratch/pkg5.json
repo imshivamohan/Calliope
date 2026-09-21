@@ -1,0 +1,235 @@
+{
+  "project": {
+    "title": "Shiva, Teja & Aashiv’s Bhimavaram Adventure",
+    "genre": "Adventure / Family Animation",
+    "tone": "Warm, vibrant, cinematic 3D animation",
+    "target_duration": "2 minutes"
+  },
+  "beats": [
+    {
+      "order_index": 1,
+      "title": "Getting Ready & Packing",
+      "description": "Shiva, Teja, and little Aashiv get ready for their exciting family road trip to Bhimavaram, packing bags into their car on a bright sunny morning."
+    },
+    {
+      "order_index": 2,
+      "title": "The Scenic Highway Drive",
+      "description": "The family car drives through lush green fields, towering coconut groves, and rural Andhra landscapes as Aashiv marvels at the views."
+    },
+    {
+      "order_index": 3,
+      "title": "Snack Time in the Car",
+      "description": "Teja opens the colorful snack bag, sharing treats with a joyful Aashiv while they cruise down the tree-lined road."
+    },
+    {
+      "order_index": 4,
+      "title": "Encounter at the Village Pond",
+      "description": "The family stops near a tranquil village pond, where Aashiv excitedly watches and quacks along with swimming ducks."
+    }
+  ],
+  "characters": [
+    {
+      "name": "Shiva",
+      "role": "Lead / Father",
+      "age": "34 years old",
+      "appearance": "A warm-hearted South Asian father with short styled black hair, kind brown eyes, a gentle trimmed beard, wearing a crisp navy-blue short-sleeve casual button-up shirt and khaki trousers.",
+      "personality": "Caring, protective, and patient.",
+      "consistency_prompt": "Character turnaround reference sheet of Shiva, a 34-year-old South Asian father with neat black hair, friendly brown eyes, and a light trimmed beard. Wearing a crisp navy-blue casual button-up shirt and tailored khaki trousers with brown loafers. Multiple angles on a seamless neutral light-grey studio backdrop: full-body front view, side profile, three-quarter view, and a close-up portrait with a warm, gentle smile. Neutral standing pose, soft diffuse studio lighting, sharp textural detail on cotton fabric, clean silhouette, warm cinematic 3D animation style, no text."
+    },
+    {
+      "name": "Teja",
+      "role": "Lead / Mother",
+      "age": "32 years old",
+      "appearance": "A vibrant and joyful South Asian mother with long black hair neatly braided over her shoulder, expressive warm eyes, wearing a sunny-yellow embroidered cotton kurta with white salwar.",
+      "personality": "Cheerful, affectionate, and organized.",
+      "consistency_prompt": "Character turnaround reference sheet of Teja, a 32-year-old South Asian mother with radiant dark eyes and long black hair in an elegant side braid. Wearing a bright sunshine-yellow cotton kurta with delicate white floral embroidery and white salwar trousers. Multiple angles on a seamless neutral light-grey studio backdrop: full-body front view, side profile, three-quarter view, and a close-up portrait with a bright, joyful smile. Neutral standing pose, even diffuse studio lighting, crisp fabric folds, warm cinematic 3D animation style, no text."
+    },
+    {
+      "name": "Aashiv",
+      "role": "Lead / Son",
+      "age": "4 years old",
+      "appearance": "An energetic, cheerful 4-year-old South Asian toddler with tousled soft dark hair, big curious eyes, wearing a bright-red graphic t-shirt, denim shorts, and blue sneakers.",
+      "personality": "Playful, exuberant, and intensely curious.",
+      "consistency_prompt": "Character turnaround reference sheet of Aashiv, an energetic 4-year-old South Asian boy with tousled dark curls and large, expressive brown eyes. Wearing a vibrant cherry-red cotton t-shirt with a small playful car print, classic denim shorts, and bright blue sneakers. Multiple angles on a seamless neutral light-grey studio backdrop: full-body front view, side profile, three-quarter view, and a close-up portrait showing wide-eyed wonder and an excited smile. Neutral standing pose, soft studio illumination, clean outlines, warm cinematic 3D animation style, no text."
+    }
+  ],
+  "locations": [
+    {
+      "name": "Home Driveway",
+      "description": "A sunny residential driveway framed by potted tropical plants and morning sunbeams, with a modern compact family SUV parked outside.",
+      "consistency_prompt": "Wide-angle establishing shot of a sun-drenched suburban driveway in South India on a bright morning. A clean paved driveway lined with lush potted palms, bougainvillea blossoms, and a charming residential gate. Soft volumetric morning sunbeams cutting through trees, casting clear golden shadows. Clear open space for family interaction, rich textures of asphalt and foliage, cinematic 3D animation aesthetic, no people, no text."
+    },
+    {
+      "name": "Scenic Road",
+      "description": "A smooth rural highway bordered by vibrant green paddy fields, tall swaying coconut palm trees, and distant low hills under a brilliant blue sky.",
+      "consistency_prompt": "Wide-angle establishing landscape of a picturesque rural highway in Andhra Pradesh, heading toward Bhimavaram. Smooth two-lane asphalt road curving gently through endless emerald-green rice paddy fields and tall, graceful coconut palms swaying in the morning breeze. Bright sun with soft wispy clouds in an azure sky, rich agricultural textures, clear road perspective receding into horizon, cinematic 3D animation style, no people, no text."
+    },
+    {
+      "name": "Inside the Car",
+      "description": "The cozy, sunlit interior of a modern family SUV with warm grey upholstery, large clear windows showing passing green countryside.",
+      "consistency_prompt": "Interior establishing view of a modern compact family SUV cabin. Clean textured upholstery in two-tone charcoal and beige, child safety seat visible in the back, wide clear windows allowing bright natural daylight and views of passing countryside greens. Soft diffused interior illumination, polished dashboard surfaces, detailed car interior design, cinematic 3D animation aesthetic, no people, no text."
+    },
+    {
+      "name": "Village Pond",
+      "description": "A peaceful village pond with calm glassy water reflecting coconut palms, white ducks swimming near blooming water lilies along the grassy bank.",
+      "consistency_prompt": "Wide-angle establishing concept of a peaceful South Indian village pond on a sunny afternoon. Calm, glassy turquoise-green water with floating pink water lilies and emerald pads, surrounded by sloping grassy banks and shady coconut palms. A small wooden fence and wild roadside flowers along the water's edge, soft golden hour sunlight creating shimmering water ripples, serene tranquil atmosphere, cinematic 3D animation style, no people, no text."
+    }
+  ],
+  "items": [
+    {
+      "name": "Family Car",
+      "description": "A modern family compact SUV in pearl white with roof rails and clean windows.",
+      "consistency_prompt": "Hero prop concept render of a modern compact family SUV. Pearl-white finish with sleek metallic trim, dark tinted windows, and sturdy roof rails. Clean studio three-quarter angle view on a neutral grey background, soft reflections on glossy car paint, crisp wheel and headlamp details, 3D animated automotive asset, no people, no text."
+    },
+    {
+      "name": "Snack Bag",
+      "description": "A cheerful turquoise canvas tote bag with woven handles, packed with fruit and colorful snack packets.",
+      "consistency_prompt": "Hero prop reference of a family travel snack bag. A bright turquoise canvas tote bag with sturdy woven striped handles, slightly opened at top revealing colorful fruit juice boxes, banana, and biscuit packs. Centered studio shot on a clean neutral grey surface, soft directional key lighting, detailed fabric weave, 3D animated prop asset, no people, no text."
+    }
+  ],
+  "scenes": [
+    {
+      "order_index": 1,
+      "heading": "EXT. HOME DRIVEWAY - MORNING",
+      "location_name": "Home Driveway",
+      "character_names": ["Shiva", "Teja", "Aashiv"],
+      "duration_sec": 18,
+      "action": "Golden morning sunlight washes over the driveway. SHIVA, in a navy-blue shirt, loads duffel bags into the car trunk. TEJA laughs joyfully as little AASHIV, wearing a red t-shirt, jumps up and down with unstoppable excitement before leaping onto the back seat.",
+      "dialog": "AASHIV: Are we going to Bhimavaram today?\nTEJA (laughing): Yes! Today is our family adventure!\nSHIVA: Water bottles packed, snacks packed, Aashiv packed!\nAASHIV: Packed!",
+      "clips": [
+        {
+          "order_index": 1,
+          "shot_size": "WideShot",
+          "duration_sec": 6,
+          "dialog_lines_covered": [1, 2],
+          "chain_from_prev": false,
+          "description": "Wide establishing shot of Shiva packing the car trunk while Teja and Aashiv celebrate in the driveway.",
+          "prompt_draft": "subject_definitions:\n<Subject 1> is the character \"Shiva\" in <Picture 1>, a South Asian father in a navy-blue shirt and khakis.\n<Subject 2> is the character \"Teja\" in <Picture 2>, a South Asian mother in a sunshine-yellow kurta.\n<Subject 3> is the character \"Aashiv\" in <Picture 3>, a 4-year-old boy in a bright red t-shirt and denim shorts.\n<Subject 4> is the environment \"Home Driveway\" in <Picture 4>, a sunlit driveway with tropical potted plants.\n\nsummary:\n[reference generation] In the sunny driveway, Shiva packs luggage into the car trunk while Teja laughs as little Aashiv jumps excitedly.\n\nretention_analysis:\n<Subject 1> (appears in [Shot 1]): fully_preserved - navy shirt, khakis, beard, and fatherly posture.\n<Subject 2> (appears in [Shot 1]): fully_preserved - yellow kurta, side braid, and joyful expression.\n<Subject 3> (appears in [Shot 1]): fully_preserved - red t-shirt, dark curls, and bouncy energy.\n<Subject 4> (appears in [Shot 1]): fully_preserved - sunny driveway layout and warm morning light.\n\ndetailed_description:\nWarm cinematic 3D animation style with volumetric golden morning light and clean camera motion.\n[Shot 1] Wide establishing shot with smooth slow push-in. <Subject 1> stands at the open rear trunk of the white car, neatly stowing a duffel bag. <Subject 3> hops up and down on the driveway with arms raised high in pure joy, looking up at <Subject 2> who clasps her hands together and laughs delightedly.\n<Subject 3> (S1) says, <d>[English] Are we going to Bhimavaram today?</d>\n<Subject 2> (S2) says (laughing), <d>[English] Yes! Today is our family adventure!</d>\n\noverall_soundscape:\nBright morning birdsong, rhythmic thud of luggage being placed in trunk, youthful giggles and footsteps on pavement.\n\nnon_diegetic_music:\nUplifting, lighthearted acoustic guitar and cheerful marimba melody setting an energetic adventure tone."
+        },
+        {
+          "order_index": 2,
+          "shot_size": "MediumCloseUp",
+          "duration_sec": 6,
+          "dialog_lines_covered": [3],
+          "chain_from_prev": true,
+          "description": "Medium shot of Shiva giving a thumbs-up by the car, smiling warmly.",
+          "prompt_draft": "subject_definitions:\n<Subject 1> is the character \"Shiva\" in <Picture 1>, a father in a navy-blue casual shirt with a trimmed beard.\n<Subject 2> is the character \"Teja\" in <Picture 2>, a mother in a yellow kurta smiling warmly.\n\nsummary:\n[reference generation + video continuation] Shiva checks off the travel checklist with a broad smile and gives an affectionate thumbs up.\n\nretention_analysis:\n<Subject 1> (appears in [Shot 1]): fully_preserved - navy-blue shirt, facial features, and warm smile.\n<Subject 2> (appears in [Shot 1]): fully_preserved - yellow kurta and laughing eyes in background.\n\ndetailed_description:\nWarm 3D animated film aesthetic, soft morning rim lighting illuminating shoulders.\n[Shot 1] Medium close-up at eye level. <Subject 1> turns toward the camera with a playful grin, counting off his fingers and finishing with an energetic thumbs up. Behind him, <Subject 2> can be seen nodding playfully in soft focus.\n<Subject 1> (S1) says, <d>[English] Water bottles packed, snacks packed, Aashiv packed!</d>\n\noverall_soundscape:\nCar door latch clicking shut, cheerful family banter, soft morning breeze.\n\nnon_diegetic_music:\nPlayful plucking acoustic guitar rhythm maintaining upbeat excitement."
+        },
+        {
+          "order_index": 3,
+          "shot_size": "MediumShot",
+          "duration_sec": 6,
+          "dialog_lines_covered": [4],
+          "chain_from_prev": true,
+          "description": "Aashiv jumps into the car seat and raises both fists in triumph, shouting 'Packed!'.",
+          "prompt_draft": "subject_definitions:\n<Subject 1> is the character \"Aashiv\" in <Picture 1>, a 4-year-old boy in a red t-shirt and blue sneakers.\n<Subject 2> is the character \"Teja\" in <Picture 2>, a mother in a yellow kurta helping by the car door.\n\nsummary:\n[reference generation + video continuation] Aashiv leaps onto the car backseat with a triumphant grin, shouting enthusiastically.\n\nretention_analysis:\n<Subject 1> (appears in [Shot 1]): fully_preserved - red t-shirt, dark tousled hair, and expressive happy face.\n<Subject 2> (appears in [Shot 1]): fully_preserved - yellow embroidered sleeve and encouraging smile.\n\ndetailed_description:\nCinematic 3D animation with rich vibrant colors and crisp motion blur on the leap.\n[Shot 1] Medium dynamic shot looking into the open car door. <Subject 1> scrambles up onto the booster seat with nimble energy, spins around to face out, and pumps both little fists triumphantly into the air with an enormous grin.\n<Subject 1> (S1) says, <d>[English] Packed!</d>\n\noverall_soundscape:\nSoft bounce on car seat cushion, gleeful shout, family laughter echoing in driveway.\n\nnon_diegetic_music:\nBright comedic brass swell transitioning into a buoyant road trip groove."
+        }
+      ]
+    },
+    {
+      "order_index": 2,
+      "heading": "EXT. SCENIC ROAD - DAY",
+      "location_name": "Scenic Road",
+      "character_names": ["Shiva", "Teja", "Aashiv"],
+      "duration_sec": 18,
+      "action": "The white family SUV cruises smoothly down a picturesque road lined with towering coconut palms and shimmering paddy fields. Inside, AASHIV presses his nose against the window in awe, pointing at colorful birds and farmers in the distance.",
+      "dialog": "AASHIV: Look, Daddy! So many trees!\nSHIVA: Yes, Aashiv. We’re getting closer to Bhimavaram.",
+      "clips": [
+        {
+          "order_index": 1,
+          "shot_size": "WideShot",
+          "duration_sec": 6,
+          "dialog_lines_covered": [],
+          "chain_from_prev": false,
+          "description": "Grand panoramic tracking shot of the family SUV cruising along the coconut-fringed highway.",
+          "prompt_draft": "subject_definitions:\n<Subject 1> is the environment \"Scenic Road\" in <Picture 1>, a highway lined with lush green paddy fields and coconut palms.\n<Subject 2> is the item \"Family Car\" in <Picture 2>, a white compact family SUV with roof rails.\n\nsummary:\n[reference generation] A sleek white family SUV drives smoothly along a sunlit rural highway surrounded by emerald fields and tall palms.\n\nretention_analysis:\n<Subject 1> (appears in [Shot 1]): fully_preserved - emerald paddy fields, coconut palms, and azure sky.\n<Subject 2> (appears in [Shot 1]): fully_preserved - pearl-white car body, roof rails, and clean proportions.\n\ndetailed_description:\nSweeping cinematic 3D animation, expansive depth of field, warm mid-morning sunlight illuminating rural landscape.\n[Shot 1] High-angle wide tracking shot following the white vehicle as it glides along the curving highway. Dappled shadows of tall coconut fronds pass rhythmically over the car roof. In the background, lush paddy fields stretch to the horizon under puffy white clouds.\n\noverall_soundscape:\nSmooth hum of car tires on asphalt, gentle rhythmic rush of wind through open countryside, distant birds.\n\nnon_diegetic_music:\nSweeping, feel-good orchestral adventure theme with breezy acoustic guitar and light percussion."
+        },
+        {
+          "order_index": 2,
+          "shot_size": "MediumCloseUp",
+          "duration_sec": 6,
+          "dialog_lines_covered": [1],
+          "chain_from_prev": true,
+          "description": "Interior shot of Aashiv pressing his hands and nose against the window, mesmerized.",
+          "prompt_draft": "subject_definitions:\n<Subject 1> is the character \"Aashiv\" in <Picture 1>, a 4-year-old boy in a red t-shirt with wide curious eyes.\n<Subject 2> is the environment \"Inside the Car\" in <Picture 2>, car interior with sunlight streaming through the window.\n\nsummary:\n[reference generation + video continuation] Aashiv presses his hands against the car window, eyes sparkling with curiosity as he watches the passing trees.\n\nretention_analysis:\n<Subject 1> (appears in [Shot 1]): fully_preserved - tousled dark curls, red t-shirt, and wonder-struck facial expression.\n<Subject 2> (appears in [Shot 1]): fully_preserved - car window reflections and warm interior upholstery.\n\ndetailed_description:\nWarm 3D animated film style, delicate daylight reflections of passing palm trees shimmering on the window glass.\n[Shot 1] Medium close-up profile. <Subject 1> leans his hands against the glass, eyes darting up and down following the scenery. His mouth opens in amazed delight as he points a finger forward.\n<Subject 1> (S1) says, <d>[English] Look, Daddy! So many trees!</d>\n\noverall_soundscape:\nInterior cabin road hum, soft air conditioning purr, little palms tapping against glass.\n\nnon_diegetic_music:\nGentle, wonder-filled melody featuring warm glockenspiel and sweet acoustic guitar chords."
+        },
+        {
+          "order_index": 3,
+          "shot_size": "MediumShot",
+          "duration_sec": 6,
+          "dialog_lines_covered": [2],
+          "chain_from_prev": true,
+          "description": "Shiva looks in the rearview mirror and smiles warmly at Aashiv.",
+          "prompt_draft": "subject_definitions:\n<Subject 1> is the character \"Shiva\" in <Picture 1>, a father with neat black hair and navy-blue shirt driving the car.\n<Subject 2> is the character \"Teja\" in <Picture 2>, a mother in a yellow kurta seated in the passenger seat.\n\nsummary:\n[reference generation + video continuation] Shiva glances up into the rearview mirror with a content smile, reassuring his son about their destination.\n\nretention_analysis:\n<Subject 1> (appears in [Shot 1]): fully_preserved - navy-blue shirt, trimmed beard, and serene smile.\n<Subject 2> (appears in [Shot 1]): fully_preserved - yellow kurta and cheerful profile.\n\ndetailed_description:\nCinematic 3D animation, soft natural daylight entering from the driver's side window.\n[Shot 1] Medium shot framed from the center console. <Subject 1> keeps one hand steady on the steering wheel while glancing warmly up at the rearview mirror, his eyes crinkling with affection.\n<Subject 1> (S1) says, <d>[English] Yes, Aashiv. We’re getting closer to Bhimavaram.</d>\n\noverall_soundscape:\nSubtle car indicator tick, smooth engine murmur, comforting interior ambience.\n\nnon_diegetic_music:\nHeartwarming melodic continuation with acoustic strums and warm cello foundation."
+        }
+      ]
+    },
+    {
+      "order_index": 3,
+      "heading": "INT. CAR INTERIOR - DAY",
+      "location_name": "Inside the Car",
+      "character_names": ["Teja", "Aashiv"],
+      "duration_sec": 12,
+      "action": "TEJA reaches down and unzips the bright turquoise snack bag. AASHIV's eyes light up with immense joy as she hands him a delicious travel treat.",
+      "dialog": "TEJA: Snack time!\nAASHIV: Yaaaaay!",
+      "clips": [
+        {
+          "order_index": 1,
+          "shot_size": "MediumShot",
+          "duration_sec": 6,
+          "dialog_lines_covered": [1],
+          "chain_from_prev": false,
+          "description": "Teja unzips the colorful snack bag with a playful flourish.",
+          "prompt_draft": "subject_definitions:\n<Subject 1> is the character \"Teja\" in <Picture 1>, a mother in a sunny-yellow kurta with long braid.\n<Subject 2> is the item \"Snack Bag\" in <Picture 2>, a bright turquoise canvas tote bag filled with treats.\n\nsummary:\n[reference generation] Teja turns around in the passenger seat and opens the turquoise snack bag with a delighted grin.\n\nretention_analysis:\n<Subject 1> (appears in [Shot 1]): fully_preserved - yellow kurta, floral embroidery, side braid, and playful expression.\n<Subject 2> (appears in [Shot 1]): fully_preserved - turquoise canvas texture, striped handles, and snack packages.\n\ndetailed_description:\nWarm 3D animated film style, soft sunbeams illuminating the car interior.\n[Shot 1] Medium shot over the center console. <Subject 1> swivels her shoulders around toward the rear seats, hoisting <Subject 2> onto her lap with a cheerful wink and pulling open the zipper.\n<Subject 1> (S1) says, <d>[English] Snack time!</d>\n\noverall_soundscape:\nCrisp zipper sound, rustle of snack packaging, soft interior cabin ambience.\n\nnon_diegetic_music:\nPlayful, upbeat woodwind and acoustic motif expressing snack time excitement."
+        },
+        {
+          "order_index": 2,
+          "shot_size": "CloseUp",
+          "duration_sec": 6,
+          "dialog_lines_covered": [2],
+          "chain_from_prev": true,
+          "description": "Close-up of Aashiv taking the snack with ecstatic wide eyes.",
+          "prompt_draft": "subject_definitions:\n<Subject 1> is the character \"Aashiv\" in <Picture 1>, a 4-year-old boy in a red t-shirt with large joyful eyes.\n\nsummary:\n[reference generation + video continuation] Aashiv cheers with huge happy eyes as he eagerly receives his favorite snack.\n\nretention_analysis:\n<Subject 1> (appears in [Shot 1]): fully_preserved - red t-shirt, curly dark hair, and ecstatic toddler expression.\n\ndetailed_description:\nCinematic 3D animation, close focus with shallow depth of field, warm golden sunlight catching his sparkling eyes.\n[Shot 1] Close-up centered on <Subject 1>. His eyes grow round with utter glee, his hands reach out enthusiastically, and he throws his head back with a radiant smile.\n<Subject 1> (S1) says, <d>[English] Yaaaaay!</d>\n\noverall_soundscape:\nJoyful childish cheer, soft wrapper crinkle, gentle road vibration.\n\nnon_diegetic_music:\nBright cheerful crescendo with xylophone accents and cheerful acoustic strums."
+        }
+      ]
+    },
+    {
+      "order_index": 4,
+      "heading": "EXT. VILLAGE POND - AFTERNOON",
+      "location_name": "Village Pond",
+      "character_names": ["Shiva", "Teja", "Aashiv"],
+      "duration_sec": 18,
+      "action": "The car pauses near a picturesque village pond. The family steps out to stretch. AASHIV notices a group of white ducks gliding across the shimmering water, steps closer cautiously, and mimics them with happy quacks.",
+      "dialog": "AASHIV: Look! Ducks!\nAASHIV (quacking): Quack! Quack!\nSHIVA (laughing): They love your quacking, Aashiv!",
+      "clips": [
+        {
+          "order_index": 1,
+          "shot_size": "WideShot",
+          "duration_sec": 6,
+          "dialog_lines_covered": [1],
+          "chain_from_prev": false,
+          "description": "Wide establishing shot of the family standing near the serene village pond watching ducks.",
+          "prompt_draft": "subject_definitions:\n<Subject 1> is the environment \"Village Pond\" in <Picture 1>, a tranquil pond with water lilies and coconut palms.\n<Subject 2> is the character \"Aashiv\" in <Picture 2>, a boy in a red t-shirt pointing toward the water.\n<Subject 3> is the character \"Shiva\" in <Picture 3>, a father in a navy-blue shirt standing by his wife.\n<Subject 4> is the character \"Teja\" in <Picture 4>, a mother in a yellow kurta smiling beside them.\n\nsummary:\n[reference generation] The family stands on the grassy bank of a tranquil village pond as little Aashiv spots ducks swimming in the water.\n\nretention_analysis:\n<Subject 1> (appears in [Shot 1]): fully_preserved - water lily pads, glassy reflections, and coconut palms.\n<Subject 2> (appears in [Shot 1]): fully_preserved - red t-shirt, blue sneakers, and excited posture.\n<Subject 3> (appears in [Shot 1]): fully_preserved - navy-blue shirt and relaxed fatherly stance.\n<Subject 4> (appears in [Shot 1]): fully_preserved - yellow kurta and graceful presence.\n\ndetailed_description:\nLush cinematic 3D animation, golden afternoon sunlight sparkling on gentle water ripples.\n[Shot 1] Wide establishing shot. <Subject 3> and <Subject 4> stand together near the grassy edge, breathing in the fresh air. In front of them, <Subject 2> stops in his tracks, leaning forward with arms outstretched pointing at swimming ducks.\n<Subject 2> (S1) says, <d>[English] Look! Ducks!</d>\n\noverall_soundscape:\nGentle water lapping, duck quacking from the pond, soft breeze rustling palm fronds, distant cicadas.\n\nnon_diegetic_music:\nTranquil, melodic acoustic guitar and flute theme evoking pastoral countryside beauty."
+        },
+        {
+          "order_index": 2,
+          "shot_size": "MediumShot",
+          "duration_sec": 6,
+          "dialog_lines_covered": [2],
+          "chain_from_prev": true,
+          "description": "Medium shot of Aashiv tiptoeing closer to the pond bank and quacking back at the ducks.",
+          "prompt_draft": "subject_definitions:\n<Subject 1> is the character \"Aashiv\" in <Picture 1>, a 4-year-old boy in a red t-shirt bending forward playfully.\n<Subject 2> is the environment \"Village Pond\" in <Picture 2>, grassy edge of pond with ripples and water lilies.\n\nsummary:\n[reference generation + video continuation] Aashiv carefully tiptoes to the water's edge, flapping his elbows like wings and quacking playfully.\n\nretention_analysis:\n<Subject 1> (appears in [Shot 1]): fully_preserved - red t-shirt, curls, and mischievous expressions.\n<Subject 2> (appears in [Shot 1]): fully_preserved - green grass, water ripples, and sunny lighting.\n\ndetailed_description:\nCharming 3D animation style, warm directional golden hour backlight creating a soft glow around hair.\n[Shot 1] Medium shot at low child eye-level. <Subject 1> tiptoes forward on the soft grass, bends his knees, flaps his elbows like duck wings, and quacks happily toward the pond.\n<Subject 1> (S1) says (quacking), <d>[English] Quack! Quack!</d>\n\noverall_soundscape:\nLight footsteps on grass, responsive duck quacks from water, gentle pond splash.\n\nnon_diegetic_music:\nPlayful, humorous pizzicato strings and buoyant marimba."
+        },
+        {
+          "order_index": 3,
+          "shot_size": "MediumWideShot",
+          "duration_sec": 6,
+          "dialog_lines_covered": [3],
+          "chain_from_prev": true,
+          "description": "Shiva and Teja laugh as the ducks paddle closer to Aashiv, a heartwarming family tableau.",
+          "prompt_draft": "subject_definitions:\n<Subject 1> is the character \"Shiva\" in <Picture 1>, a father in a navy-blue shirt laughing warmly.\n<Subject 2> is the character \"Teja\" in <Picture 2>, a mother in a yellow kurta smiling happily.\n<Subject 3> is the character \"Aashiv\" in <Picture 3>, a toddler in a red t-shirt watching the ducks.\n\nsummary:\n[reference generation + video continuation] Shiva and Teja laugh affectionately as the ducks swim closer to Aashiv, completing a joyful family moment.\n\nretention_analysis:\n<Subject 1> (appears in [Shot 1]): fully_preserved - navy shirt, beard, and loving gaze.\n<Subject 2> (appears in [Shot 1]): fully_preserved - yellow kurta, braid, and joyful smile.\n<Subject 3> (appears in [Shot 1]): fully_preserved - red t-shirt and curious silhouette.\n\ndetailed_description:\nWarm cinematic 3D animation, golden hour glow draping the entire family and water in soft amber tones.\n[Shot 1] Medium wide family tableau. <Subject 1> wraps an affectionate arm around <Subject 2>'s shoulder as they watch <Subject 3>. Several white ducks paddle gently across the foreground ripples, quacking back in greeting.\n<Subject 1> (S1) says (laughing), <d>[English] They love your quacking, Aashiv!</d>\n\noverall_soundscape:\nFriendly duck quacks, water ripples, happy shared family laughter, warm afternoon breeze.\n\nnon_diegetic_music:\nWarm, swelling acoustic guitar and orchestral strings resolving in a triumphant, loving cadence."
+        }
+      ]
+    }
+  ]
+}

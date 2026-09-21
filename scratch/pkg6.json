@@ -1,0 +1,322 @@
+{
+  "project": {
+    "title": "When the Wife Goes Away, the Husband Is Happy!",
+    "genre": "Romantic Comedy / Family Animation",
+    "tone": "Warm, lighthearted, comedic, cinematic 3D animation",
+    "target_duration": "2 minutes"
+  },
+  "beats": [
+    {
+      "order_index": 1,
+      "title": "Teja's Endless Questions & Departure",
+      "description": "Teja bombards Shiva with her usual loving checklist of questions before heading off to her parents' house for two days. Shiva bids her a polite, saintly farewell."
+    },
+    {
+      "order_index": 2,
+      "title": "The Bachelor Celebration",
+      "description": "The moment the door clicks shut, Shiva breaks into an exuberant victory dance, takes over the sofa with jumbo chips, and basks in total freedom."
+    },
+    {
+      "order_index": 3,
+      "title": "The Cooking Catastrophe",
+      "description": "Hunger strikes. Shiva attempts to cook dal following an online tutorial, resulting in a cloud of kitchen smoke and an unrecognizable culinary disaster."
+    },
+    {
+      "order_index": 4,
+      "title": "The Quiet Evening & Loneliness",
+      "description": "Eating takeout alone in front of the TV, Shiva looks at Teja's empty armchair, suddenly missing her constant chatter and presence."
+    },
+    {
+      "order_index": 5,
+      "title": "The Morning Phone Call",
+      "description": "Teja calls to check in. Shiva pretends to be a self-sufficient master of the house, but background beeps give him away. Teja announces her early return, making Shiva's face light up."
+    },
+    {
+      "order_index": 6,
+      "title": "The Surprise Return & Kitchen Duty",
+      "description": "Teja suddenly knocks at the door, catching Shiva mid-monologue. She playfully orders 'Mr. Singer' to clean the kitchen, and they share a loving laugh."
+    }
+  ],
+  "characters": [
+    {
+      "name": "Shiva",
+      "role": "Lead / Husband",
+      "age": "34 years old",
+      "appearance": "An expressive South Asian husband with tousled dark hair, warm eyes, and an animated comedic face. Wears a comfortable heather-grey casual t-shirt and navy-blue lounge pants.",
+      "personality": "Playful, dramatic, loving, and slightly clumsy.",
+      "consistency_prompt": "Character turnaround reference sheet of Shiva, a 34-year-old South Asian husband with expressive brown eyes, slightly messy black hair, and an animated comedic expression. Wearing a casual heather-grey t-shirt with a small graphic and comfortable navy-blue lounge pants with slip-on sandals. Multiple angles on a seamless neutral light-grey studio backdrop: full-body front view, side profile, three-quarter view, and a close-up portrait with a guilty, funny smile. Neutral standing pose, soft diffuse studio lighting, crisp silhouette, clean fabric folds, warm cinematic 3D animation style, no text."
+    },
+    {
+      "name": "Teja",
+      "role": "Lead / Wife",
+      "age": "32 years old",
+      "appearance": "A vibrant and observant South Asian wife with dark eyes, sleek black hair tied into an elegant low bun, wearing a stylish magenta-and-teal embroidered salwar kameez.",
+      "personality": "Sharp, affectionate, organized, and playfully commanding.",
+      "consistency_prompt": "Character turnaround reference sheet of Teja, a 32-year-old South Asian wife with sharp observant dark eyes, sleek black hair tied into an elegant low chignon bun, and a knowing, affectionate smile. Wearing an elegant magenta-and-teal embroidered cotton salwar kameez with a draped dupatta and small gold hoop earrings. Multiple angles on a seamless neutral light-grey studio backdrop: full-body front view, side profile, three-quarter view, and a close-up portrait with a playful, quizzical expression. Neutral standing pose, soft diffuse studio lighting, sharp textural detail, warm cinematic 3D animation style, no text."
+    }
+  ],
+  "locations": [
+    {
+      "name": "Living Room",
+      "description": "A cozy, vibrant suburban living room with a plush teal sofa, wooden coffee table, large flatscreen TV, and Teja's favorite armchair.",
+      "consistency_prompt": "Wide-angle establishing interior shot of a warm, vibrant South Asian suburban living room. A comfortable plush teal three-seater sofa, a polished wooden coffee table, Teja's cozy woven armchair by the window, and a large flatscreen television mounted on a warm terracotta accent wall. Morning sun streaming through sheer curtains, clean floor space for character movement, rich furniture textures, cinematic 3D animation style, no people, no text."
+    },
+    {
+      "name": "Kitchen",
+      "description": "A modern home kitchen with black granite countertops, a stainless steel stove, spice racks, and a large refrigerator covered in magnets.",
+      "consistency_prompt": "Wide-angle establishing interior shot of a modern Indian home kitchen. Polished black granite countertops, a two-burner stainless steel gas stove with brass burners, a double-door refrigerator covered in colorful family photo magnets, wooden cabinetry, and a spice rack on the wall. Bright window over the sink letting in natural daylight, clear cooking workspace, clean textures, cinematic 3D animation style, no people, no text."
+    },
+    {
+      "name": "Front Entrance",
+      "description": "An apartment entryway with a teak wood door, brass handle, peephole, and clean tiled floor.",
+      "consistency_prompt": "Establishing shot of an Indian apartment entrance hallway and front doorway. A polished dark teak wood door with a shiny brass handle and modern doorbell chime, clean white-tiled foyer floor with a subtle geometric threshold pattern, soft warm hallway lighting, cinematic 3D animation aesthetic, no people, no text."
+    }
+  ],
+  "items": [
+    {
+      "name": "Chips Packet",
+      "description": "A jumbo party-size shiny blue-and-yellow potato chips bag.",
+      "consistency_prompt": "Hero prop reference of a jumbo party-size potato chips bag. Bright glossy metallic electric-blue and golden-yellow foil packaging, crinkled slightly at the top. Centered studio product shot on a clean neutral grey backdrop, soft directional studio reflections, tactile foil texture, 3D animated comedy asset, no characters, no text."
+    },
+    {
+      "name": "Burnt Pot",
+      "description": "A smoking blackened stainless steel saucepan with charred crust.",
+      "consistency_prompt": "Hero prop reference of a burnt cooking saucepan. A stainless steel cooking pot with heat-tarnished edges, a smoking blackened rim, and comical charcoal-crusted residue inside. Centered studio product shot on a neutral matte grey surface, soft directional key lighting, comedic prop design, 3D animated film asset, no characters, no text."
+    },
+    {
+      "name": "Mop and Bucket",
+      "description": "A bright red plastic bucket with suds and a yellow spin mop.",
+      "consistency_prompt": "Hero prop reference of a household cleaning set. A bright red plastic cleaning bucket filled with bubbly suds and a yellow microfiber spin mop standing upright. Centered studio shot on a clean neutral grey backdrop, soft studio lighting, clean glossy plastic textures, 3D animated asset, no characters, no text."
+    }
+  ],
+  "scenes": [
+    {
+      "order_index": 1,
+      "heading": "INT. LIVING ROOM - MORNING",
+      "location_name": "Living Room",
+      "character_names": ["Shiva", "Teja"],
+      "duration_sec": 18,
+      "action": "TEJA zips her travel trolley, firing off rapid-fire domestic instructions. SHIVA nods solemnly with saintly patience, seeing her to the doorway with a gentle smile.",
+      "dialog": "TEJA: Shiva, what do you want to eat? Why are you wearing that shirt? When will you come home?\nTEJA: I'm going to my parents' house for two days. Please take care of the house!\nSHIVA: Of course, Teja! Have a wonderful trip!",
+      "clips": [
+        {
+          "order_index": 1,
+          "shot_size": "MediumShot",
+          "duration_sec": 6,
+          "dialog_lines_covered": [1],
+          "chain_from_prev": false,
+          "description": "Teja zips her travel bag and questions Shiva with rapid, caring hand gestures.",
+          "prompt_draft": "subject_definitions:\n<Subject 1> is the character \"Teja\" in <Picture 1>, a woman in a magenta salwar kameez with an observant expression.\n<Subject 2> is the character \"Shiva\" in <Picture 2>, a man in a grey t-shirt nodding with wide polite eyes.\n<Subject 3> is the environment \"Living Room\" in <Picture 3>, a warm suburban living room with morning light.\n\nsummary:\n[reference generation] Teja delivers her rapid morning questions while zipping her travel bag as Shiva listens patiently.\n\nretention_analysis:\n<Subject 1> (appears in [Shot 1]): fully_preserved - magenta salwar, low bun, and animated facial expressions.\n<Subject 2> (appears in [Shot 1]): fully_preserved - grey t-shirt, dark hair, and polite compliant posture.\n<Subject 3> (appears in [Shot 1]): fully_preserved - teal sofa, wooden table, and warm sunlight.\n\ndetailed_description:\nWarm comedic 3D animation style with natural morning light streaming through sheer curtains.\n[Shot 1] Medium two-shot at eye level. <Subject 1> zips her purple suitcase shut, immediately looking up at <Subject 2> while counting on her fingers with swift, affectionate queries. <Subject 2> stands beside the sofa, his head nodding mechanically up and down with an obedient, innocent smile.\n<Subject 1> (S1) says, <d>[English] Shiva, what do you want to eat? Why are you wearing that shirt? When will you come home?</d>\n\noverall_soundscape:\nLuggage zipper zipping shut, soft rustle of clothing, suburban morning birds chirping outside.\n\nnon_diegetic_music:\nPlayful, comedic pizzicato violin and marimba rhythm mimicking her rapid questions."
+        },
+        {
+          "order_index": 2,
+          "shot_size": "MediumCloseUp",
+          "duration_sec": 6,
+          "dialog_lines_covered": [2],
+          "chain_from_prev": true,
+          "description": "Teja points an affectionate warning finger before picking up her trolley handle.",
+          "prompt_draft": "subject_definitions:\n<Subject 1> is the character \"Teja\" in <Picture 1>, a wife in a magenta salwar kameez with a loving half-smile.\n<Subject 2> is the character \"Shiva\" in <Picture 2>, a husband in a grey t-shirt standing dutifully.\n\nsummary:\n[reference generation + video continuation] Teja delivers her final instruction to take care of the house before rolling her suitcase.\n\nretention_analysis:\n<Subject 1> (appears in [Shot 1]): fully_preserved - magenta salwar, earrings, and warm maternal authority.\n<Subject 2> (appears in [Shot 1]): fully_preserved - grey t-shirt and attentive stance.\n\ndetailed_description:\nWarm 3D animated film aesthetic, soft rim light highlighting character contours.\n[Shot 1] Medium close-up on <Subject 1> as she extends her suitcase handle with a metallic click. She raises one finger in a playful cautionary wag, then smiles warmly at <Subject 2>.\n<Subject 1> (S1) says, <d>[English] I'm going to my parents' house for two days. Please take care of the house!</d>\n\noverall_soundscape:\nTelescopic suitcase handle clicking, soft footsteps on hardwood floor.\n\nnon_diegetic_music:\nCharming acoustic guitar strums with cheerful woodwinds."
+        },
+        {
+          "order_index": 3,
+          "shot_size": "MediumShot",
+          "duration_sec": 6,
+          "dialog_lines_covered": [3],
+          "chain_from_prev": true,
+          "description": "Shiva waves goodbye at the open door with a halo of angelic innocence.",
+          "prompt_draft": "subject_definitions:\n<Subject 1> is the character \"Shiva\" in <Picture 1>, a husband in a grey t-shirt waving enthusiastically.\n<Subject 2> is the environment \"Front Entrance\" in <Picture 2>, teak wood doorway with bright exterior hallway.\n\nsummary:\n[reference generation + video continuation] Shiva waves goodbye with a sweet, angelic smile as Teja steps out.\n\nretention_analysis:\n<Subject 1> (appears in [Shot 1]): fully_preserved - grey t-shirt, dark hair, and theatrical sweet smile.\n<Subject 2> (appears in [Shot 1]): fully_preserved - teak doorway and threshold.\n\ndetailed_description:\nCinematic 3D animation, bright sunny backlight from the exterior hallway framing the doorway.\n[Shot 1] Medium shot looking towards the front entrance. <Subject 1> rests one hand on the door frame, waving the other hand smoothly in slow motion, wearing the sweetest, most innocent expression conceivable.\n<Subject 1> (S1) says, <d>[English] Of course, Teja! Have a wonderful trip!</d>\n\noverall_soundscape:\nDoor clicking softly shut, latch snapping into place, deep silence falling over the apartment.\n\nnon_diegetic_music:\nSweet melodic cadence that suddenly stops dead on the door click."
+        }
+      ]
+    },
+    {
+      "order_index": 2,
+      "heading": "INT. LIVING ROOM - MORNING",
+      "location_name": "Living Room",
+      "character_names": ["Shiva"],
+      "duration_sec": 18,
+      "action": "The door lock clicks. Absolute silence. SHIVA's eyes slowly widen. A massive grin spreads across his face. He erupts into a wild victory dance, dives onto the couch, rips open a giant packet of chips, and kicks his feet onto the coffee table.",
+      "dialog": "SHIVA: YAAAAAY! No one is going to ask me anything today!\nSHIVA: This is the life!",
+      "clips": [
+        {
+          "order_index": 1,
+          "shot_size": "MediumShot",
+          "duration_sec": 6,
+          "dialog_lines_covered": [1],
+          "chain_from_prev": false,
+          "description": "Shiva leaps into the air with a hilarious victory dance.",
+          "prompt_draft": "subject_definitions:\n<Subject 1> is the character \"Shiva\" in <Picture 1>, a man in a grey t-shirt and navy lounge pants jumping with ecstasy.\n<Subject 2> is the environment \"Living Room\" in <Picture 2>, a suburban living room with a teal sofa.\n\nsummary:\n[reference generation] The second the door locks, Shiva leaps into the air with ecstatic joy, celebrating his total freedom.\n\nretention_analysis:\n<Subject 1> (appears in [Shot 1]): fully_preserved - grey t-shirt, lounge pants, and wildly animated happy expression.\n<Subject 2> (appears in [Shot 1]): fully_preserved - teal sofa and living room layout.\n\ndetailed_description:\nHigh-energy comedic 3D animation with dynamic motion blur on limbs.\n[Shot 1] Medium wide shot. <Subject 1> freezes for one second, then explodes upward in a hilarious Bollywood-style victory leap, pumping both fists into the air and spinning on one heel across the living room carpet.\n<Subject 1> (S1) says, <d>[English] YAAAAAY! No one is going to ask me anything today!</d>\n\noverall_soundscape:\nSock slide on wooden floor, exuberant whoop and celebratory holler.\n\nnon_diegetic_music:\nExplosive, funky brass fanfare with upbeat drums and groovy bassline."
+        },
+        {
+          "order_index": 2,
+          "shot_size": "WideShot",
+          "duration_sec": 6,
+          "dialog_lines_covered": [],
+          "chain_from_prev": true,
+          "description": "Shiva belly-flops onto the sofa and grabs the TV remote control.",
+          "prompt_draft": "subject_definitions:\n<Subject 1> is the character \"Shiva\" in <Picture 1>, a husband diving in mid-air onto the sofa.\n<Subject 2> is the environment \"Living Room\" in <Picture 2>, teal couch and coffee table.\n\nsummary:\n[reference generation + video continuation] Shiva dives horizontally onto the plush sofa cushions and clicks on the TV.\n\nretention_analysis:\n<Subject 1> (appears in [Shot 1]): fully_preserved - grey shirt, lounge pants, and gleeful face.\n<Subject 2> (appears in [Shot 1]): fully_preserved - teal sofa cushions and wooden coffee table.\n\ndetailed_description:\nCinematic 3D animation with cartoon physics, slow-motion cushion impact.\n[Shot 1] Dynamic wide shot tracking sideways. <Subject 1> launches horizontally through the air like a superhero, landing belly-first on the plush teal sofa cushions, which bounce comically. He snatches the TV remote off the table and clicks it triumphantly.\n\noverall_soundscape:\nDeep satisfying sofa cushion 'phwump', TV turning on with electronic chime, remote clicks.\n\nnon_diegetic_music:\nSmooth funk groove continuing with playful electric guitar riffs."
+        },
+        {
+          "order_index": 3,
+          "shot_size": "MediumCloseUp",
+          "duration_sec": 6,
+          "dialog_lines_covered": [2],
+          "chain_from_prev": true,
+          "description": "Shiva kicks his bare feet up on the coffee table and munches chips with pure bliss.",
+          "prompt_draft": "subject_definitions:\n<Subject 1> is the character \"Shiva\" in <Picture 1>, a relaxed man reclining on the couch eating chips.\n<Subject 2> is the item \"Chips Packet\" in <Picture 2>, a shiny blue-and-yellow jumbo potato chips bag.\n\nsummary:\n[reference generation + video continuation] Shiva props his feet onto the coffee table and crunches chips with utmost relaxation.\n\nretention_analysis:\n<Subject 1> (appears in [Shot 1]): fully_preserved - grey t-shirt, messy dark hair, and blissful relaxed grin.\n<Subject 2> (appears in [Shot 1]): fully_preserved - glossy blue-and-yellow foil chips bag.\n\ndetailed_description:\nWarm comedic 3D animation, soft interior lighting.\n[Shot 1] Low-angle medium close-up framed past Shiva's crossed feet resting prominently on the coffee table. <Subject 1> leans his head back against the sofa pillows, digging his hand into <Subject 2> and crunching a chip with exaggerated satisfaction.\n<Subject 1> (S1) says, <d>[English] This is the life!</d>\n\noverall_soundscape:\nCrisp loud chip crunch, metallic crinkle of foil bag, TV murmuring in background.\n\nnon_diegetic_music:\nRelaxed, breezy reggae-tinged comedy score."
+        }
+      ]
+    },
+    {
+      "order_index": 3,
+      "heading": "INT. KITCHEN - AFTERNOON",
+      "location_name": "Kitchen",
+      "character_names": ["Shiva"],
+      "duration_sec": 18,
+      "action": "A couple hours later, Shiva's stomach rumbles. He opens the fridge and stares blankly at heaps of raw vegetables. Inspired by a smartphone cooking video, he tosses random ingredients into a pot. Moments later—WHOOSH! Dense white smoke erupts, filling the kitchen as Shiva coughs and coughs.",
+      "dialog": "SHIVA: Hmm... I should cook something. What do I cook?\nSHIVA: Oh no! That doesn't look like the video!",
+      "clips": [
+        {
+          "order_index": 1,
+          "shot_size": "MediumShot",
+          "duration_sec": 6,
+          "dialog_lines_covered": [1],
+          "chain_from_prev": false,
+          "description": "Shiva stares into the refrigerator, utterly baffled by raw vegetables.",
+          "prompt_draft": "subject_definitions:\n<Subject 1> is the character \"Shiva\" in <Picture 1>, a husband scratching his head in front of an open fridge.\n<Subject 2> is the environment \"Kitchen\" in <Picture 2>, a modern kitchen with black granite counters.\n\nsummary:\n[reference generation] Shiva stands before the glowing refrigerator, perplexed by raw vegetables while trying to decide what to cook.\n\nretention_analysis:\n<Subject 1> (appears in [Shot 1]): fully_preserved - grey t-shirt, puzzled expression, and scratching head.\n<Subject 2> (appears in [Shot 1]): fully_preserved - refrigerator shelves, vegetables, and kitchen counters.\n\ndetailed_description:\nCinematic 3D animation with cool white LED light spilling from the open refrigerator onto Shiva's face.\n[Shot 1] Medium shot from inside the refrigerator looking out at <Subject 1>. Shiva pulls open the door, bends his knees, and scratches his head with a comical squint, staring uncomprehendingly at bundles of coriander, carrots, and eggplants.\n<Subject 1> (S1) says, <d>[English] Hmm... I should cook something. What do I cook?</d>\n\noverall_soundscape:\nHum of refrigerator motor, door seal suction pop, distant stomach rumble.\n\nnon_diegetic_music:\nQuirky, quizzical bassoon and muted trumpet tune reflecting culinary confusion."
+        },
+        {
+          "order_index": 2,
+          "shot_size": "MediumShot",
+          "duration_sec": 6,
+          "dialog_lines_covered": [],
+          "chain_from_prev": true,
+          "description": "Dense smoke erupts from the pot, billowing across the kitchen.",
+          "prompt_draft": "subject_definitions:\n<Subject 1> is the character \"Shiva\" in <Picture 1>, a panicked man waving his hands in dense kitchen smoke.\n<Subject 2> is the environment \"Kitchen\" in <Picture 2>, a smoke-filled kitchen with granite counters.\n\nsummary:\n[reference generation + video continuation] Thick smoke suddenly bellows out of the cooking pot, enveloping Shiva in a comedic kitchen disaster.\n\nretention_analysis:\n<Subject 1> (appears in [Shot 1]): fully_preserved - grey t-shirt, coughing face, and frantic hand waving.\n<Subject 2> (appears in [Shot 1]): fully_preserved - stove top, cabinets, and smoke clouds.\n\ndetailed_description:\nHigh-energy 3D animation with volumetric smoke plumes curling dramatically around the lights.\n[Shot 1] Medium shot. A sudden dramatic WHOOSH sends thick white clouds of smoke billowing from the stainless pot on the gas burner. <Subject 1> stumbles backward in panic, coughing wildly and waving a dishtowel to disperse the smoke.\n\noverall_soundscape:\nSizzling whoosh of burning food, loud coughing, rhythmic high-pitched beeping of smoke detector.\n\nnon_diegetic_music:\nFrantic cartoon chase music with rapid xylophone and slide whistle accents."
+        },
+        {
+          "order_index": 3,
+          "shot_size": "CloseUp",
+          "duration_sec": 6,
+          "dialog_lines_covered": [2],
+          "chain_from_prev": true,
+          "description": "Close-up of Shiva looking down into the charred pot with disbelief.",
+          "prompt_draft": "subject_definitions:\n<Subject 1> is the character \"Shiva\" in <Picture 1>, a soot-smudged man staring down in disbelief.\n<Subject 2> is the item \"Burnt Pot\" in <Picture 2>, a smoking charred pot with strange burnt residue.\n\nsummary:\n[reference generation + video continuation] Shiva inspects the charred, bubbling culinary failure in the pot with wide, disbelieving eyes.\n\nretention_analysis:\n<Subject 1> (appears in [Shot 1]): fully_preserved - soot on cheek, disheveled hair, and comical disappointment.\n<Subject 2> (appears in [Shot 1]): fully_preserved - blackened pot edges and smoking burnt dal.\n\ndetailed_description:\nWarm comedic 3D animation style, shallow depth of field.\n[Shot 1] Close-up looking down into the blackened saucepan. A single lazy bubble of pitch-black sludge pops with a tiny puff of smoke. <Subject 1> leans in with soot on his left cheek, his mouth hanging open in sheer disbelief.\n<Subject 1> (S1) says, <d>[English] Oh no! That doesn't look like the video!</d>\n\noverall_soundscape:\nSingle comical 'bloop' bubble pop, sizzling hiss, Shiva's dismayed sigh.\n\nnon_diegetic_music:\nSad comedic trombone 'wah-wah-wah' cadence."
+        }
+      ]
+    },
+    {
+      "order_index": 4,
+      "heading": "INT. LIVING ROOM - EVENING",
+      "location_name": "Living Room",
+      "character_names": ["Shiva"],
+      "duration_sec": 18,
+      "action": "Dusk falls outside. The living room is dim and hushed. Shiva sits on the carpet with takeout containers, chewing slowly. He looks over at Teja's empty rocking chair bathed in twilight. A wave of loneliness washes over him.",
+      "dialog": "SHIVA: If Teja were here, she would be talking to me right now.",
+      "clips": [
+        {
+          "order_index": 1,
+          "shot_size": "WideShot",
+          "duration_sec": 6,
+          "dialog_lines_covered": [],
+          "chain_from_prev": false,
+          "description": "Wide shot of the vast, quiet living room as dusk settles in.",
+          "prompt_draft": "subject_definitions:\n<Subject 1> is the character \"Shiva\" in <Picture 1>, a lone figure sitting quietly by the coffee table.\n<Subject 2> is the environment \"Living Room\" in <Picture 2>, a dim living room with blue twilight through the window.\n\nsummary:\n[reference generation] A wide, melancholy view of the dimly lit living room as dusk falls and Shiva sits quietly with takeout.\n\nretention_analysis:\n<Subject 1> (appears in [Shot 1]): fully_preserved - grey t-shirt, slouched posture, and quiet solitude.\n<Subject 2> (appears in [Shot 1]): fully_preserved - teal sofa, coffee table, and deep blue evening shadows.\n\ndetailed_description:\nCinematic 3D animation with moody blue twilight entering the window and warm amber glow from a single corner lamp.\n[Shot 1] Wide static establishing shot. <Subject 1> sits cross-legged on the floor beside the coffee table, a small takeout food box in front of him. The large house feels cavernous and eerily still around him.\n\noverall_soundscape:\nDistant evening traffic outside, ticking of the wall clock, faint drone of the refrigerator.\n\nnon_diegetic_music:\nGentle, melancholic piano melody with warm acoustic cello expressing solitude."
+        },
+        {
+          "order_index": 2,
+          "shot_size": "MediumCloseUp",
+          "duration_sec": 6,
+          "dialog_lines_covered": [1],
+          "chain_from_prev": true,
+          "description": "Shiva holds his fork mid-air, gazing wistfully across the room.",
+          "prompt_draft": "subject_definitions:\n<Subject 1> is the character \"Shiva\" in <Picture 1>, a husband looking thoughtful and wistful.\n\nsummary:\n[reference generation + video continuation] Shiva stops eating mid-bite, gazing wistfully across the room as he misses his wife's presence.\n\nretention_analysis:\n<Subject 1> (appears in [Shot 1]): fully_preserved - grey t-shirt, gentle eyes, and tender, reflective expression.\n\ndetailed_description:\nAtmospheric 3D animated film aesthetic, soft amber lamplight illuminating Shiva's face.\n[Shot 1] Medium close-up at eye level. <Subject 1> holds a fork of rice halfway to his mouth, pausing. His eyes soften, shifting from humor to genuine tenderness as he gazes across the room.\n<Subject 1> (S1) says, <d>[English] If Teja were here, she would be talking to me right now.</d>\n\noverall_soundscape:\nSoft exhale, silence in the room, clock ticking steadily.\n\nnon_diegetic_music:\nHeartfelt acoustic guitar notes intertwining with warm strings."
+        },
+        {
+          "order_index": 3,
+          "shot_size": "CloseUp",
+          "duration_sec": 6,
+          "dialog_lines_covered": [],
+          "chain_from_prev": true,
+          "description": "Gently tracking shot of Teja's empty armchair resting in the twilight.",
+          "prompt_draft": "subject_definitions:\n<Subject 1> is the environment \"Living Room\" in <Picture 1>, Teja's empty armchair by the window in twilight.\n\nsummary:\n[reference generation + video continuation] The camera slowly glides past Teja's empty armchair bathed in soft twilight, emphasizing her absence.\n\nretention_analysis:\n<Subject 1> (appears in [Shot 1]): fully_preserved - cozy armchair, draped throw blanket, and window twilight.\n\ndetailed_description:\nPoetic cinematic 3D animation, soft volumetric dusk light drifting through window curtains.\n[Shot 1] Slow cinematic push-in toward the empty woven armchair. A colorful patterned throw cushion rests neatly in the corner, motionless. The empty chair visually anchors the quiet void in the household.\n\noverall_soundscape:\nGentle breeze rustling window curtains, stillness of the evening.\n\nnon_diegetic_music:\nSoulful, tender musical swell evoking love and longing."
+        }
+      ]
+    },
+    {
+      "order_index": 5,
+      "heading": "INT. LIVING ROOM - NEXT MORNING",
+      "location_name": "Living Room",
+      "character_names": ["Shiva", "Teja"],
+      "duration_sec": 18,
+      "action": "Next morning. The phone rings loudly. Shiva scrambles to answer. Teja's voice crackles through the speaker. Shiva tries to sound super proud, but background beeps expose his takeout diet. When Teja announces she is returning tomorrow, Shiva's entire face lights up with joy.",
+      "dialog": "TEJA: Shiva, how are you? Did you eat? What did you eat?\nSHIVA: I'm very happy! I ate... food... food from a restaurant.\nTEJA (laughing): I'll come home tomorrow!\nSHIVA: Tomorrow?!",
+      "clips": [
+        {
+          "order_index": 1,
+          "shot_size": "MediumCloseUp",
+          "duration_sec": 6,
+          "dialog_lines_covered": [1],
+          "chain_from_prev": false,
+          "description": "Shiva picks up the phone eagerly, trying to sound nonchalant.",
+          "prompt_draft": "subject_definitions:\n<Subject 1> is the character \"Shiva\" in <Picture 1>, a husband holding his phone to his ear with an eager expression.\n<Subject 2> is the environment \"Living Room\" in <Picture 2>, a sunlit morning living room.\n\nsummary:\n[reference generation] Shiva answers the ringing phone with eager haste, straining to project a carefree, independent demeanor.\n\nretention_analysis:\n<Subject 1> (appears in [Shot 1]): fully_preserved - grey t-shirt, messy morning hair, and wide attentive eyes.\n<Subject 2> (appears in [Shot 1]): fully_preserved - morning living room background.\n\ndetailed_description:\nWarm comedic 3D animation style, bright morning sunlight pouring across the room.\n[Shot 1] Medium close-up. <Subject 1> presses his smartphone to his ear, sitting up straight on the sofa and puffing his chest out to sound composed.\n<Subject 2> (S2) says, <d>[English] Shiva, how are you? Did you eat? What did you eat?</d>\n\noverall_soundscape:\nPhone speaker audio, microwave BEEP-BEEP sounding in background, light morning traffic.\n\nnon_diegetic_music:\nPlayful, perky pizzicato strings re-entering with light comedic bounce."
+        },
+        {
+          "order_index": 2,
+          "shot_size": "CloseUp",
+          "duration_sec": 6,
+          "dialog_lines_covered": [2],
+          "chain_from_prev": true,
+          "description": "Shiva stammers guiltily as the background microwave beeps betray him.",
+          "prompt_draft": "subject_definitions:\n<Subject 1> is the character \"Shiva\" in <Picture 1>, a guilty husband grinning nervously on the phone.\n\nsummary:\n[reference generation + video continuation] Shiva stammers an awkward confession about eating restaurant food after an embarrassing pause.\n\nretention_analysis:\n<Subject 1> (appears in [Shot 1]): fully_preserved - grey t-shirt, sheepish grimace, and rolling eyes.\n\ndetailed_description:\nComedic 3D animated film style, expressive micro-expressions.\n[Shot 1] Tight close-up on <Subject 1>. Shiva wincing as a loud microwave BEEP sounds off-screen. He rolls his eyes, laughs nervously, and rubs the back of his neck.\n<Subject 1> (S1) says, <d>[English] I'm very happy! I ate... food... food from a restaurant.</d>\n\noverall_soundscape:\nLoud electronic kitchen BEEP-BEEP, Teja's clear laughter booming through the phone speaker.\n\nnon_diegetic_music:\nPlayful tuba and clarinet comedic stumble motif."
+        },
+        {
+          "order_index": 3,
+          "shot_size": "MediumCloseUp",
+          "duration_sec": 6,
+          "dialog_lines_covered": [3, 4],
+          "chain_from_prev": true,
+          "description": "Shiva's eyes widen with sheer delight as Teja announces her return.",
+          "prompt_draft": "subject_definitions:\n<Subject 1> is the character \"Shiva\" in <Picture 1>, an overjoyed husband grinning from ear to ear.\n\nsummary:\n[reference generation + video continuation] Shiva's face lights up with incandescent happiness when Teja announces she is returning tomorrow.\n\nretention_analysis:\n<Subject 1> (appears in [Shot 1]): fully_preserved - grey shirt, radiant smile, and eyes glowing with relief.\n\ndetailed_description:\nWarm vibrant 3D animation, sparkling catchlights in Shiva's eyes.\n[Shot 1] Medium close-up. <Subject 1>'s sheepish face transforms instantly. His eyebrows shoot up in joyful surprise, a gigantic beam illuminating his features.\n<Subject 2> (S2) says (laughing), <d>[English] I'll come home tomorrow!</d>\n<Subject 1> (S1) says, <d>[English] Tomorrow?!</d>\n\noverall_soundscape:\nJoyful gasp, telephone click hanging up, cheerful morning birds outside.\n\nnon_diegetic_music:\nBright, soaring acoustic progression filled with joy and warmth."
+        }
+      ]
+    },
+    {
+      "order_index": 6,
+      "heading": "INT. FRONT ENTRANCE & LIVING ROOM - DAY",
+      "location_name": "Front Entrance",
+      "character_names": ["Shiva", "Teja"],
+      "duration_sec": 18,
+      "action": "Shiva stands in the hallway finishing his philosophical monologue about marriage. KNOCK KNOCK! He swings the door open—and TEJA is already standing on the doorstep with her suitcase! She catches him red-handed, hands him a mop, and they burst into happy laughter.",
+      "dialog": "SHIVA: But after a while, you realize the house isn't as happy without her!\nTEJA: Did you just say something about me?\nSHIVA: Me? No! I was practicing a song!\nTEJA (laughing): Okay, Mr. Singer. Now clean the kitchen!\nSHIVA (saluting): Yes, madam!",
+      "clips": [
+        {
+          "order_index": 1,
+          "shot_size": "MediumShot",
+          "duration_sec": 6,
+          "dialog_lines_covered": [1],
+          "chain_from_prev": false,
+          "description": "Shiva addresses the messy room, delivering his heartfelt realization.",
+          "prompt_draft": "subject_definitions:\n<Subject 1> is the character \"Shiva\" in <Picture 1>, a husband looking around his messy apartment with a wry smile.\n<Subject 2> is the environment \"Front Entrance\" in <Picture 2>, apartment hallway and front door.\n\nsummary:\n[reference generation] Shiva gazes at the messy kitchen and living room, acknowledging that the house feels empty without his wife.\n\nretention_analysis:\n<Subject 1> (appears in [Shot 1]): fully_preserved - grey t-shirt, rueful fond smile, and hands on hips.\n<Subject 2> (appears in [Shot 1]): fully_preserved - hallway, door, and messy apartment glimpse.\n\ndetailed_description:\nWarm cinematic 3D animation, soft daylight.\n[Shot 1] Medium tracking shot following <Subject 1> as he walks toward the hallway, looking back affectionately at the messy counter with a philosophical shake of his head.\n<Subject 1> (S1) says, <d>[English] But after a while, you realize the house isn't as happy without her!</d>\n\noverall_soundscape:\nLoud sharp KNOCK-KNOCK on the wooden door, startling Shiva.\n\nnon_diegetic_music:\nGentle acoustic guitar theme building toward a comical revelation."
+        },
+        {
+          "order_index": 2,
+          "shot_size": "MediumWideShot",
+          "duration_sec": 6,
+          "dialog_lines_covered": [2, 3],
+          "chain_from_prev": true,
+          "description": "Shiva opens the door to find Teja already standing there with a knowing smirk.",
+          "prompt_draft": "subject_definitions:\n<Subject 1> is the character \"Shiva\" in <Picture 1>, a shocked husband frozen mid-motion.\n<Subject 2> is the character \"Teja\" in <Picture 2>, a wife in a magenta salwar standing at the doorway with an amused smirk.\n<Subject 3> is the environment \"Front Entrance\" in <Picture 3>, open front doorway.\n\nsummary:\n[reference generation + video continuation] Shiva opens the front door to find Teja standing on the threshold, having arrived early to catch him.\n\nretention_analysis:\n<Subject 1> (appears in [Shot 1]): fully_preserved - grey t-shirt, wide startled eyes, and guilty frozen pose.\n<Subject 2> (appears in [Shot 1]): fully_preserved - magenta salwar kameez, travel suitcase, and triumphant smirk.\n<Subject 3> (appears in [Shot 1]): fully_preserved - teak doorframe and entryway tile.\n\ndetailed_description:\nCrisp comedic 3D animation style, bright corridor backlight behind Teja.\n[Shot 1] Medium two-shot at the open doorway. <Subject 1> pulls the door open and freezes completely rigid, his eyes bugging out. On the threshold, <Subject 2> stands casually with her hand on her hip and eyebrows arched.\n<Subject 2> (S2) says, <d>[English] Did you just say something about me?</d>\n<Subject 1> (S1) says, <d>[English] Me? No! I was practicing a song!</d>\n\noverall_soundscape:\nDoor swinging open smoothly, Teja's suitcase wheels settling on tiles, Shiva's nervous gulp.\n\nnon_diegetic_music:\nComedic freeze-frame sting transitioning into an upbeat, laughing brass groove."
+        },
+        {
+          "order_index": 3,
+          "shot_size": "MediumShot",
+          "duration_sec": 6,
+          "dialog_lines_covered": [4, 5],
+          "chain_from_prev": true,
+          "description": "Teja hands Shiva a red mop bucket; Shiva salutes playfully as both laugh warmly.",
+          "prompt_draft": "subject_definitions:\n<Subject 1> is the character \"Teja\" in <Picture 1>, a laughing wife handing over a cleaning mop.\n<Subject 2> is the character \"Shiva\" in <Picture 2>, a playful husband giving an over-the-top military salute.\n<Subject 3> is the item \"Mop and Bucket\" in <Picture 3>, a red plastic bucket with a yellow mop.\n\nsummary:\n[reference generation + video continuation] Teja laughs and hands Shiva a cleaning bucket, and Shiva salutes obediently as they reunite in shared joy.\n\nretention_analysis:\n<Subject 1> (appears in [Shot 1]): fully_preserved - magenta salwar, radiant laughter, and playful teasing posture.\n<Subject 2> (appears in [Shot 1]): fully_preserved - grey t-shirt, exaggerated funny salute, and joyful smile.\n<Subject 3> (appears in [Shot 1]): fully_preserved - bright red bucket and yellow mop.\n\ndetailed_description:\nWarm heartwarming 3D animation, golden afternoon sunlight bathing the reunited couple.\n[Shot 1] Medium shot inside the hallway. <Subject 1> hands <Subject 3> over with a burst of hearty laughter. <Subject 2> takes the mop with his left hand, snaps a rigid comical military salute with his right hand, and both burst into warm, affectionate laughter.\n<Subject 1> (S1) says (laughing), <d>[English] Okay, Mr. Singer. Now clean the kitchen!</d>\n<Subject 2> (S2) says (saluting), <d>[English] Yes, madam!</d>\n\noverall_soundscape:\nPlastic bucket handle rattle, shared hearty laughter echoing through the happy home.\n\nnon_diegetic_music:\nJoyful, swelling orchestral rom-com finale theme with warm guitar, brass, and romantic strings."
+        }
+      ]
+    }
+  ]
+}

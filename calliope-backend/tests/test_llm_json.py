@@ -1,0 +1,455 @@
+"""Regression tests for LLM JSON handling (user-reported bugs).
+
+Covers:
+1. LM Studio-style servers rejecting `response_format` (HTTP 400) — the
+   client must retry without the field instead of failing the whole request.
+2. "Extra data: line 1 column 308" — models emitting valid JSON followed by
+   trailing prose/chatter; extract_json must recover the object.
+"""
+from __future__ import annotations
+
+import json
+
+import httpx
+import pytest
+
+from calliope.agent.llm import LLMClient, extract_json
+
+# ---------- extract_json ----------
+
+def test_extract_json_plain():
+    assert extract_json('{"a": 1}') == {"a": 1}
+
+
+def test_extract_json_fenced_block():
+    text = 'Here is your JSON:\n```json\n{"a": 1, "b": [2, 3]}\n```\nDone!'
+    assert extract_json(text) == {"a": 1, "b": [2, 3]}
+
+
+def test_extract_json_trailing_prose_extra_data():
+    # The exact failure class the user hit: valid object + trailing text
+    text = '{"title": "The Long Road", "beats": []} I hope this helps!'
+    assert extract_json(text)["title"] == "The Long Road"
+
+
+def test_extract_json_leading_prose():
+    text = 'Sure! Here is the storyline you asked for: {"title": "X"}'
+    assert extract_json(text)["title"] == "X"
+
+
+def test_extract_json_two_objects_takes_first():
+    text = '{"first": true} {"second": true}'
+    assert extract_json(text) == {"first": True}
+
+
+def test_extract_json_rejects_garbage():
+    with pytest.raises(ValueError):
+        extract_json("no json here at all")
+
+
+def test_extract_json_empty():
+    with pytest.raises(ValueError):
+        extract_json("   ")
+
+
+# ---------- LLMClient response_format fallback ----------
+
+def _sse_body(message: dict) -> bytes:
+    """Encode a full assistant message as a minimal SSE stream."""
+    chunks = []
+    if message.get("reasoning_content"):
+        chunks.append(
+            {"choices": [{"delta": {"reasoning_content": message["reasoning_content"]}}]}
+        )
+    if message.get("content"):
+        chunks.append({"choices": [{"delta": {"content": message["content"]}}]})
+    chunks.append({"choices": [{"delta": {}, "finish_reason": "stop"}]})
+    lines = [b"data: " + json.dumps(c).encode() for c in chunks]
+    lines.append(b"data: [DONE]")
+    return b"\n".join(lines) + b"\n"
+
+
+class _FakeRouter:
+    """httpx mock transport handler that 400s any request containing response_format.
+
+    Serves SSE when the request asks for stream:true, plain JSON otherwise —
+    chat()/chat_with_tools() stream internally, so both shapes occur.
+    """
+
+    def __init__(self, content: str, reject_response_format: bool) -> None:
+        self.content = content
+        self.reject = reject_response_format
+        self.requests: list[dict] = []
+
+    async def __call__(self, request: httpx.Request) -> httpx.Response:
+        body = json.loads(request.content.decode())
+        self.requests.append(body)
+        if self.reject and "response_format" in body:
+            return httpx.Response(
+                400,
+                json={"error": {"message": "response_format is not supported"}},
+            )
+        if body.get("stream"):
+            return httpx.Response(
+                200,
+                content=_sse_body({"content": self.content}),
+                headers={"content-type": "text/event-stream"},
+            )
+        return httpx.Response(
+            200,
+            json={"choices": [{"message": {"content": self.content}}]},
+        )
+
+
+class _SequenceRouter(_FakeRouter):
+    """Returns each reply in order instead of a fixed one."""
+
+    def __init__(self, contents: list[str], reject_response_format: bool) -> None:
+        super().__init__(contents[0], reject_response_format)
+        self.contents = contents
+        self.calls = 0
+
+    async def __call__(self, request: httpx.Request) -> httpx.Response:
+        content = self.contents[min(self.calls, len(self.contents) - 1)]
+        self.calls += 1
+        self.content = content
+        return await super().__call__(request)
+
+
+async def test_chat_retries_without_response_format_on_400(monkeypatch):
+    router = _FakeRouter(content='{"ok": true}', reject_response_format=True)
+    transport = httpx.MockTransport(router)
+    client = LLMClient()
+    monkeypatch.setattr(client, "client", httpx.AsyncClient(transport=transport))
+
+    text = await client.chat(
+        [{"role": "user", "content": "hi"}],
+        response_format={"type": "json_object"},
+    )
+
+    assert text == '{"ok": true}'
+    assert len(router.requests) == 2
+    assert "response_format" in router.requests[0]
+    assert "response_format" not in router.requests[1]
+
+
+async def test_generate_structured_no_response_format_by_default(monkeypatch):
+    # Default path must NOT send response_format (LM Studio compatibility)
+    router = _FakeRouter(content='{"a": 1}', reject_response_format=True)
+    transport = httpx.MockTransport(router)
+    client = LLMClient()
+    monkeypatch.setattr(client, "client", httpx.AsyncClient(transport=transport))
+    monkeypatch.setattr("calliope.agent.llm.LLMClient", lambda: client)
+
+    result = await generate_structured_public([{"role": "user", "content": "hi"}])
+
+    assert result == {"a": 1}
+    assert len(router.requests) == 1
+    assert "response_format" not in router.requests[0]
+
+
+async def generate_structured_public(messages):
+    from calliope.agent.llm import generate_structured
+
+    return await generate_structured(messages)
+
+
+async def test_generate_structured_recovers_via_json_mode_retry(monkeypatch):
+    # First reply is garbage prose; the json_object retry must rescue it.
+    router = _SequenceRouter(
+        ["sorry, I cannot do that", '{"title": "Saved"}'],
+        reject_response_format=False,
+    )
+    transport = httpx.MockTransport(router)
+    client = LLMClient()
+    monkeypatch.setattr(client, "client", httpx.AsyncClient(transport=transport))
+    monkeypatch.setattr("calliope.agent.llm.LLMClient", lambda: client)
+
+    result = await generate_structured_public([{"role": "user", "content": "hi"}])
+
+    assert result == {"title": "Saved"}
+    assert len(router.requests) == 2
+    assert "response_format" not in router.requests[0]
+    assert router.requests[1].get("response_format") == {"type": "json_object"}
+
+
+async def test_generate_structured_raises_when_both_attempts_fail(monkeypatch):
+    router = _SequenceRouter(
+        ["all prose", "still prose"],
+        reject_response_format=False,
+    )
+    transport = httpx.MockTransport(router)
+    client = LLMClient()
+    monkeypatch.setattr(client, "client", httpx.AsyncClient(transport=transport))
+    monkeypatch.setattr("calliope.agent.llm.LLMClient", lambda: client)
+
+    with pytest.raises(ValueError):
+        await generate_structured_public([{"role": "user", "content": "hi"}])
+
+
+# ---------- chat_stream: mid-stream error payloads ----------
+
+
+def _sse_lines(*chunks: dict) -> list[bytes]:
+    out = []
+    for c in chunks:
+        out.append(b"data: " + json.dumps(c).encode())
+    out.append(b"data: [DONE]")
+    return out
+
+
+class _StreamRouter:
+    """Serves a scripted SSE stream."""
+
+    def __init__(self, chunks: list[dict]) -> None:
+        self.chunks = chunks
+
+    async def __call__(self, request: httpx.Request) -> httpx.Response:
+        lines = _sse_lines(*self.chunks)
+        body = b"\n".join(lines) + b"\n"
+        return httpx.Response(
+            200,
+            content=body,
+            headers={"content-type": "text/event-stream"},
+        )
+
+
+async def test_chat_stream_surfaces_error_payload(monkeypatch):
+    """A mid-stream {error: ...} chunk must raise, not end as a blank reply."""
+    router = _StreamRouter(
+        [
+            {"error": {"message": "model overloaded"}},
+        ]
+    )
+    transport = httpx.MockTransport(router)
+    client = LLMClient()
+    monkeypatch.setattr(client, "client", httpx.AsyncClient(transport=transport))
+
+    events = []
+    with pytest.raises(RuntimeError, match="model overloaded"):
+        async for ev in client.chat_stream([{"role": "user", "content": "hi"}]):
+            events.append(ev)
+    assert events == []  # nothing yielded before the failure surfaced
+
+
+async def test_chat_stream_surfaces_string_error(monkeypatch):
+    """Non-dict error payloads degrade to str(), still raising."""
+    router = _StreamRouter([{"error": "bad gateway"}])
+    transport = httpx.MockTransport(router)
+    client = LLMClient()
+    monkeypatch.setattr(client, "client", httpx.AsyncClient(transport=transport))
+
+    with pytest.raises(RuntimeError, match="bad gateway"):
+        async for _ in client.chat_stream([{"role": "user", "content": "hi"}]):
+            pass
+
+
+async def test_chat_stream_normal_tokens_unaffected(monkeypatch):
+    """Happy path: deltas flow, done arrives, no error."""
+    router = _StreamRouter(
+        [
+            {"choices": [{"delta": {"content": "Hi"}}]},
+            {"choices": [{"delta": {"content": " there"}, "finish_reason": "stop"}]},
+        ]
+    )
+    transport = httpx.MockTransport(router)
+    client = LLMClient()
+    monkeypatch.setattr(client, "client", httpx.AsyncClient(transport=transport))
+
+    events = [ev async for ev in client.chat_stream([{"role": "user", "content": "hi"}])]
+    types = [e["type"] for e in events]
+    assert types == ["delta", "delta", "done"]
+    assert events[0]["content"] == "Hi"
+
+
+# ---------- reasoning-only replies (thinking models returning no `content`) ----------
+# Reasoning models served via OpenAI-compatible endpoints can spend the whole
+# completion in a reasoning channel (e.g. `reasoning_content`) and return a
+# message with NO `content` key. That must be a retryable failure, not a
+# KeyError bubbling up as an HTTP 500.
+
+class _MessageRouter:
+    """Returns full message dicts in sequence (to simulate reasoning-only replies).
+
+    Streamed requests get the message re-encoded as SSE deltas — a
+    reasoning-only message becomes a stream with reasoning chunks and no
+    content chunks, which is exactly what oMLX-style servers emit."""
+
+    def __init__(self, messages: list[dict]) -> None:
+        self.messages = messages
+        self.requests: list[dict] = []
+
+    async def __call__(self, request: httpx.Request) -> httpx.Response:
+        body = json.loads(request.content.decode())
+        self.requests.append(body)
+        message = self.messages[min(len(self.requests) - 1, len(self.messages) - 1)]
+        if body.get("stream"):
+            return httpx.Response(
+                200,
+                content=_sse_body(message),
+                headers={"content-type": "text/event-stream"},
+            )
+        return httpx.Response(
+            200,
+            json={"choices": [{"message": message, "finish_reason": "length"}]},
+        )
+
+
+async def test_chat_raises_value_error_on_missing_content(monkeypatch):
+    router = _MessageRouter(
+        [{"role": "assistant", "reasoning_content": "thinking forever..."}]
+    )
+    client = LLMClient()
+    monkeypatch.setattr(
+        client, "client", httpx.AsyncClient(transport=httpx.MockTransport(router))
+    )
+
+    with pytest.raises(ValueError, match="no content"):
+        await client.chat([{"role": "user", "content": "hi"}])
+
+
+async def test_generate_structured_recovers_from_reasoning_only_reply(monkeypatch):
+    router = _MessageRouter(
+        [
+            {"role": "assistant", "reasoning_content": "hmm..."},
+            {"role": "assistant", "content": '{"title": "Saved"}'},
+        ]
+    )
+    client = LLMClient()
+    monkeypatch.setattr(
+        client, "client", httpx.AsyncClient(transport=httpx.MockTransport(router))
+    )
+    monkeypatch.setattr("calliope.agent.llm.LLMClient", lambda: client)
+
+    result = await generate_structured_public([{"role": "user", "content": "hi"}])
+
+    assert result == {"title": "Saved"}
+    assert len(router.requests) == 2
+    assert router.requests[1].get("response_format") == {"type": "json_object"}
+
+
+# ---------- streaming-internal chat: fallbacks and accumulation ----------
+# chat()/chat_with_tools() now consume chat_stream, so the 120 s client
+# timeout bounds the gap BETWEEN chunks (liveness), not total generation time.
+# These tests pin the two fallback ladders and the accumulation contract.
+
+
+class _NoStreamRouter:
+    """A server that rejects stream:true outright (400), accepts blocking."""
+
+    def __init__(self, content: str) -> None:
+        self.content = content
+        self.requests: list[dict] = []
+
+    async def __call__(self, request: httpx.Request) -> httpx.Response:
+        body = json.loads(request.content.decode())
+        self.requests.append(body)
+        if body.get("stream"):
+            return httpx.Response(
+                400, json={"error": {"message": "stream is not supported"}}
+            )
+        return httpx.Response(
+            200, json={"choices": [{"message": {"content": self.content}}]}
+        )
+
+
+async def test_chat_falls_back_to_blocking_when_stream_rejected(monkeypatch):
+    router = _NoStreamRouter(content='{"ok": true}')
+    client = LLMClient()
+    monkeypatch.setattr(
+        client, "client", httpx.AsyncClient(transport=httpx.MockTransport(router))
+    )
+
+    text = await client.chat([{"role": "user", "content": "hi"}])
+
+    assert text == '{"ok": true}'
+    # one rejected stream attempt, then one blocking call
+    assert [b.get("stream", False) for b in router.requests] == [True, False]
+
+
+async def test_chat_stream_drops_response_format_then_streams(monkeypatch):
+    """The in-stream 400 ladder: response_format dropped, request retried."""
+    router = _FakeRouter(content='{"ok": true}', reject_response_format=True)
+    client = LLMClient()
+    monkeypatch.setattr(
+        client, "client", httpx.AsyncClient(transport=httpx.MockTransport(router))
+    )
+
+    text = await client.chat(
+        [{"role": "user", "content": "hi"}],
+        response_format={"type": "json_object"},
+    )
+
+    assert text == '{"ok": true}'
+    assert len(router.requests) == 2
+    assert "response_format" in router.requests[0]
+    assert "response_format" not in router.requests[1]
+    assert router.requests[1].get("stream") is True  # still streaming, not blocking
+
+
+class _ToolStreamRouter:
+    """Streams one content delta plus one chunked tool call."""
+
+    def __init__(self) -> None:
+        self.requests: list[dict] = []
+
+    async def __call__(self, request: httpx.Request) -> httpx.Response:
+        body = json.loads(request.content.decode())
+        self.requests.append(body)
+        chunks = [
+            {"choices": [{"delta": {"content": "Queuing now."}}]},
+            {
+                "choices": [
+                    {
+                        "delta": {
+                            "tool_calls": [
+                                {
+                                    "index": 0,
+                                    "id": "call_1",
+                                    "function": {"name": "enqueue_asset", "arguments": '{"scene'},
+                                }
+                            ]
+                        }
+                    }
+                ]
+            },
+            {
+                "choices": [
+                    {
+                        "delta": {
+                            "tool_calls": [
+                                {"index": 0, "function": {"arguments": '_id": 3}'}}
+                            ]
+                        },
+                        "finish_reason": "tool_calls",
+                    }
+                ]
+            },
+        ]
+        lines = [b"data: " + json.dumps(c).encode() for c in chunks]
+        lines.append(b"data: [DONE]")
+        return httpx.Response(
+            200,
+            content=b"\n".join(lines) + b"\n",
+            headers={"content-type": "text/event-stream"},
+        )
+
+
+async def test_chat_with_tools_accumulates_streamed_tool_call(monkeypatch):
+    router = _ToolStreamRouter()
+    client = LLMClient()
+    monkeypatch.setattr(
+        client, "client", httpx.AsyncClient(transport=httpx.MockTransport(router))
+    )
+
+    msg = await client.chat_with_tools(
+        [{"role": "user", "content": "hi"}],
+        tools=[{"type": "function", "function": {"name": "enqueue_asset"}}],
+    )
+
+    assert msg["role"] == "assistant"
+    assert msg["content"] == "Queuing now."
+    assert len(msg["tool_calls"]) == 1
+    call = msg["tool_calls"][0]
+    assert call["function"]["name"] == "enqueue_asset"
+    assert json.loads(call["function"]["arguments"]) == {"scene_id": 3}

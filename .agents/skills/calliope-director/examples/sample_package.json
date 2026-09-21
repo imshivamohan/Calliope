@@ -1,0 +1,83 @@
+{
+  "project": {
+    "title": "Chinni, Devi & Surekha's School Adventure",
+    "genre": "Adventure / Animation",
+    "tone": "Warm, vibrant, cinematic 3D animated film",
+    "target_duration": "1 minute"
+  },
+  "beats": [
+    {
+      "order_index": 1,
+      "title": "Morning Departure",
+      "description": "Chinni and her friends gather on a sunlit village road, eager to start their school adventure."
+    },
+    {
+      "order_index": 2,
+      "title": "Crossing the Stream",
+      "description": "The girls carefully cross stepping stones across a sparkling stream."
+    }
+  ],
+  "characters": [
+    {
+      "name": "Chinni",
+      "role": "Lead / Protagonist",
+      "age": "8 years old",
+      "appearance": "An energetic South Asian schoolgirl with bright sparkling eyes, twin braids tied with red ribbons, wearing a navy-blue pinafore school uniform over a white short-sleeve shirt.",
+      "personality": "Fearless, curious, and infectious enthusiasm.",
+      "consistency_prompt": "Character turnaround reference sheet of Chinni, an 8-year-old South Asian schoolgirl with bright eyes and twin black braids tied with vibrant red ribbons. She is wearing a navy-blue pinafore uniform over a crisp white collared shirt and black shoes. Multiple views on a seamless neutral light-grey studio backdrop: full-body front view, side profile, three-quarter view, and a close-up portrait with a joyful smile. Neutral standing pose, soft diffuse studio lighting, crisp silhouettes, clean fabric folds, warm cinematic 3D animation style."
+    },
+    {
+      "name": "Devi",
+      "role": "Supporting / Best Friend",
+      "age": "8 years old",
+      "appearance": "A thoughtful schoolgirl with round spectacles, a high ponytail, wearing the matching navy-and-white school uniform.",
+      "personality": "Observant, cautious, and loyal.",
+      "consistency_prompt": "Character turnaround reference sheet of Devi, an 8-year-old South Asian schoolgirl wearing delicate round spectacles and her hair pulled into a neat high ponytail. She wears a navy-blue pinafore school uniform over a white collared shirt. Multiple views on a seamless neutral studio backdrop: front view, side profile, and close-up portrait with an observant, gentle smile. Even soft lighting, clean character turnaround, warm cinematic 3D animation style."
+    }
+  ],
+  "locations": [
+    {
+      "name": "Village Dirt Road",
+      "description": "A rural red-dirt lane framed by majestic banyan and coconut trees with sunbeams piercing morning mist.",
+      "consistency_prompt": "Wide-angle establishing landscape of a rural South Indian village red-dirt lane in the early morning. Towering banyan trees with hanging aerial roots and lush coconut palms line both sides, with soft golden sunbeams piercing through light morning mist. Roadside green grasses and blooming yellow wildflowers. Clear readable path receding into the distance, serene atmospheric lighting, rich foliage textures, cinematic 3D animation aesthetic, no people, no text."
+    }
+  ],
+  "items": [
+    {
+      "name": "School Backpack",
+      "description": "A sky-blue durable canvas school backpack with yellow zipper pulls and a smiling sun patch.",
+      "consistency_prompt": "Hero prop reference of an elementary school backpack. A sky-blue canvas backpack with sturdy straps, bright yellow zipper pulls, and a stitched smiling sun cloth patch on the front pocket. Centered studio shot on a clean neutral grey backdrop, soft directional studio key light, crisp canvas weave texture, 3D animated film asset, no characters, no text."
+    }
+  ],
+  "scenes": [
+    {
+      "order_index": 1,
+      "heading": "EXT. VILLAGE DIRT ROAD - MORNING",
+      "location_name": "Village Dirt Road",
+      "character_names": ["Chinni", "Devi"],
+      "duration_sec": 12,
+      "action": "Golden morning sunlight cuts through misty coconut trees. CHINNI, an 8-year-old girl in a navy-blue pinafore and twin red-ribbon braids, skips down the red-dirt lane, schoolbag bouncing. DEVI catches up with quick steps, adjusting her glasses with a laugh.",
+      "dialog": "CHINNI: Hurry up Devi, the school bell will ring soon!\nDEVI (laughing): Wait for me, Chinni!",
+      "clips": [
+        {
+          "order_index": 1,
+          "shot_size": "WideShot",
+          "duration_sec": 6,
+          "dialog_lines_covered": [1],
+          "chain_from_prev": false,
+          "description": "Wide tracking shot as Chinni skips down the sunlit dirt road, turning back to wave.",
+          "prompt_draft": "subject_definitions:\n<Subject 1> is the character \"Chinni\" in <Picture 1>, an 8-year-old girl with twin red-ribbon braids and a navy-and-white school uniform.\n<Subject 2> is the environment \"Village Dirt Road\" in <Picture 2>, a red-dirt lane with morning sunbeams through banyan trees.\n\nsummary:\n[reference generation] Chinni skips joyfully down the village road bathed in morning sunbeams, calling back to her friend.\n\nretention_analysis:\n<Subject 1> (appears in [Shot 1]): fully_preserved - facial features, braids with red ribbons, and navy-and-white uniform.\n<Subject 2> (appears in [Shot 1]): fully_preserved - red-dirt path, banyan trees, and golden morning light.\n\ndetailed_description:\nCinematic 3D animation style with warm volumetric morning light and gentle atmospheric haze.\n[Shot 1] Smooth wide tracking shot moving alongside the dirt path. <Subject 1> skips energetically down the lane, her sky-blue backpack bouncing slightly. She twists around with an open smile, gesturing forward with her hand.\n<Subject 1> (S1) says, <d>[English] Hurry up Devi, the school bell will ring soon!</d>\n\noverall_soundscape:\nGentle morning birds chirping, soft rustling of palm leaves in the breeze, light footsteps on packed dirt.\n\nnon_diegetic_music:\nCheerful, lighthearted acoustic guitar melody with warm marimba accents, lively tempo."
+        },
+        {
+          "order_index": 2,
+          "shot_size": "MediumShot",
+          "duration_sec": 6,
+          "dialog_lines_covered": [2],
+          "chain_from_prev": true,
+          "description": "Medium shot of Devi running up to join Chinni, smiling as she pushes up her glasses.",
+          "prompt_draft": "subject_definitions:\n<Subject 1> is the character \"Devi\" in <Picture 1>, an 8-year-old girl with round spectacles and navy-and-white school uniform.\n<Subject 2> is the character \"Chinni\" in <Picture 2>, an 8-year-old girl with twin red-ribbon braids.\n\nsummary:\n[reference generation + video continuation] Devi runs up to join Chinni on the road, adjusting her spectacles with a bright smile.\n\nretention_analysis:\n<Subject 1> (appears in [Shot 1]): fully_preserved - spectacles, high ponytail, and uniform.\n<Subject 2> (appears in [Shot 1]): fully_preserved - braids, red ribbons, and expressive smile.\n\ndetailed_description:\nWarm 3D animated film aesthetic, soft directional morning sunlight catching the edge of hair.\n[Shot 1] Medium two-shot at eye level, camera tracking gently backwards. <Subject 1> jogs into frame from screen left, pressing an index finger to the bridge of her round spectacles to steady them as she laughs. <Subject 2> slows her pace to match, turning warmly toward her.\n<Subject 1> (S1) says (laughing), <d>[English] Wait for me, Chinni!</d>\n\noverall_soundscape:\nLight jogging footsteps on the ground, youthful laughter, distant gentle breeze.\n\nnon_diegetic_music:\nPlayful acoustic guitar and melodic glockenspiel continuing smoothly."
+        }
+      ]
+    }
+  ]
+}
