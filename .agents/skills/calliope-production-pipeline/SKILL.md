@@ -52,12 +52,17 @@ In `calliope-backend/src/calliope/queue/worker.py`:
 Located in `calliope-backend/src/calliope/audio/higgs.py`:
 * **Model**: Higgs Audio v3 (`HiggsV3Generate`, 4B foundation model) with `HiggsV3LoadModel`.
 * **Voice Cloning**: Whisper-large-v3-turbo reference audio transcriber (`HiggsV3TranscribeAudio`).
+* **Multi-Speaker Synthesis**: `HiggsV3MultiSpeaker` node for multi-turn dialogues with distinct character voices.
+* **Registered Dynamic Audio Workflows**:
+  * `local_higgs_only_audio_tts_API` (id 22): Direct single-speaker TTS via `(Input:prompt) Dialogue Text` and `(Output:audio) Generated Audio`.
+  * `local_higgs_reference_voice_clone_API` (id 23): Reference voice cloning via `(Input:prompt) Dialogue Text`, `(Input:audio) Reference Voice`, and `(Output:audio) Generated Audio`.
+  * `local_higgs_multispeaker_dialogue_API` (id 24): Multi-speaker synthesis via `(Input:prompt) Multi-Speaker Dialogue`, `(Input:audio) Speaker 1 Voice`, `(Input:audio) Speaker 2 Voice`, and `(Output:audio) Generated Audio`.
 * **Presets**:
   * **Default Female**: `WomanVoice6Sec.mp3`
   * **Default Male**: `ManVoice42Sec.mp3` (re-encoded with clean MP3 headers)
   * **Reference Voice**: Character turnaround reference sample (`c.voice_sample_path`).
 
-### Screenplay Parsing & Cue Grouping
+### Screenplay Parsing & Emotional Delivery Hooks
 To solve the bug where ComfyUI read `"[1]"` as the spoken word *"one"* or read parenthetical cues like `"(wistful)"` as speech:
 * `parse_screenplay_dialogue()` groups multi-line screenplay text into structured character speech turns:
   ```text
@@ -66,11 +71,18 @@ To solve the bug where ComfyUI read `"[1]"` as the spoken word *"one"* or read p
   Actual dialogue spoken by character.
   ```
 * `extract_clip_dialogue_turns()` resolves `clip.dialog_lines_covered` directly to speech text, stripping raw line numbers.
-* `enhance_for_higgs()` converts cues to Higgs control tags:
-  * `(whispering)` -> `<|style:whispering|>`
-  * `(laughing)` -> `<|sfx:laughter|>Haha, `
-  * `(sighs)` -> `<|sfx:sigh|>`
-  * Injects `<|prosody:expressive_high|>` and `<|prosody:pause|>`.
+* `enhance_for_higgs()` converts cues and dialogue context to Higgs control tags, hooks, and natural pauses:
+  * **Opening Hook**: `[HOOK]` prepended to ensure dynamic, high-engagement vocal delivery.
+  * **Prosody Control**: `<|prosody:expressive_high|>`, `<|prosody:pause|>` at ellipsis (`...`), dashes (`--`), and punctuation.
+  * **Emotional Styles**: `<|style:whispering|>`, `<|style:shouting|>`, `<|style:panicked|>`, `<|style:angry|>`, `<|style:crying|>`, `<|style:laughing|>`, `<|style:excited|>`, `<|style:cheerful|>`, `<|style:sarcastic|>`, `<|style:dramatic|>`.
+  * **Emotional States**: `<|emotion:fear|>`, `<|emotion:anger|>`, `<|emotion:sadness|>`, `<|emotion:elation|>`, `<|emotion:relief|>`, `<|emotion:surprise|>`, `<|emotion:confusion|>`.
+  * **Vocal SFX**: `<|sfx:laughter|>Haha, `, `<|sfx:sigh|>Ahh, `, `<|sfx:crying|>Sob, `, `<|sfx:gasp|> `, `<|sfx:cough|>Ahem, `, `<|sfx:groan|>Ugh, `.
+  * **Multi-Speaker Formatting**:
+    ```text
+    [HOOK]
+    [Speaker_1]: <|prosody:expressive_high|><|style:whispering|>Alice's line
+    [Speaker_2]: <|prosody:expressive_high|><|style:excited|>Bob's line
+    ```
 
 ### Dialogue Duration Estimation
 In `calliope-backend/src/calliope/agent/coverage_agent.py`:

@@ -133,3 +133,40 @@ def test_settings_dual_endpoint(client):
     )
     assert update_r.status_code == 200
     assert update_r.json()["comfyui_audio_base_url"] == "http://127.0.0.1:8189"
+
+
+def test_higgs_emotions_and_hooks():
+    from calliope.audio.higgs import enhance_for_higgs, infer_emotion_tags, map_cue_to_higgs_tag
+
+    # Cues
+    assert "<|style:whispering|>" in map_cue_to_higgs_tag("whispering")
+    assert "<|style:shouting|>" in map_cue_to_higgs_tag("shouting")
+    assert "<|sfx:laughter|>" in map_cue_to_higgs_tag("laughing")
+    assert "<|emotion:fear|>" in map_cue_to_higgs_tag("panicked")
+
+    # Inferred emotions
+    assert "<|style:panicked|>" in infer_emotion_tags("Look out! Run!")
+    assert "<|style:laughing|>" in infer_emotion_tags("Haha that is so funny")
+
+    # Enhanced string with hook and prosody
+    enhanced = enhance_for_higgs("Don't look back.", cue="whispering", include_hook=True)
+    assert enhanced.startswith("[HOOK]")
+    assert "<|style:whispering|>" in enhanced
+    assert "<|prosody:expressive_high|>" in enhanced
+    assert "Don't look back." in enhanced
+
+
+def test_multispeaker_prompt_and_resolution():
+    from calliope.audio.higgs import format_multispeaker_higgs_prompt
+
+    turns = [
+        ("ALICE", "whispering", "Do you hear that?"),
+        ("BOB", "excited", "Yes, it is amazing!"),
+    ]
+    prompt, speakers = format_multispeaker_higgs_prompt(turns, include_hook=True)
+    assert speakers == ["ALICE", "BOB"]
+    assert "[HOOK]" in prompt
+    assert "[Speaker_1]:" in prompt
+    assert "<|style:whispering|>" in prompt
+    assert "[Speaker_2]:" in prompt
+    assert "<|style:excited|>" in prompt

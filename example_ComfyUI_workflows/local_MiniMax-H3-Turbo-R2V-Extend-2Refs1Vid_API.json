@@ -90,8 +90,8 @@
         0
       ],
       "latent_image": [
-        "6187",
-        1
+        "6195",
+        0
       ]
     },
     "class_type": "SamplerCustomAdvanced",
@@ -169,7 +169,7 @@
   },
   "138": {
     "inputs": {
-      "value": ""
+      "value": "subject_definitions:\n<Subject 1> is the character in <Picture 1>.\n<Subject 2> is the character or environment in <Picture 2>.\n\nsummary:\n[reference generation + video continuation] Continuation of the previous shot as <Subject 1> speaks.\n\nretention_analysis:\n<Subject 1> (appears in [Shot 1]): fully_preserved.\n<Subject 2> (appears in [Shot 1]): fully_preserved.\n\ndetailed_description:\nSeamless continuity from the preceding shot.\n[Shot 1] Continuing motion. <Subject 1> speaks the dialogue in <Audio 1>, face clearly visible, mouth, lips, and jaw moving in exact synchronization with <Audio 1>. Other characters listen attentively with mouths closed.\n<Subject 1> (S1) says, <d>[English] Continuing dialogue line in sync.</d>\n\noverall_soundscape:\nN/A\n\nnon_diegetic_music:\nN/A"
     },
     "class_type": "PrimitiveStringMultiline",
     "_meta": {
@@ -287,8 +287,8 @@
         0
       ],
       "audio": [
-        "6193",
-        0
+        "6195",
+        1
       ]
     },
     "class_type": "VHS_VideoCombine",
@@ -383,6 +383,10 @@
       "ref_images": [
         "6188",
         0
+      ],
+      "ref_audio": [
+        "6193",
+        0
       ]
     },
     "class_type": "MiniMaxH3VideoExtendPatched",
@@ -476,18 +480,31 @@
   },
   "6193": {
     "inputs": {
-      "samples": [
-        "125",
+      "audio": "WomanVoice6Sec.mp3"
+    },
+    "class_type": "LoadAudio",
+    "_meta": {
+      "title": "Audio (Input:audio)"
+    }
+  },
+  "6195": {
+    "inputs": {
+      "av_latent": [
+        "6187",
+        1
+      ],
+      "source_audio": [
+        "6193",
         0
       ],
-      "vae": [
+      "audio_vae": [
         "120",
         0
       ]
     },
-    "class_type": "VAEDecodeAudio",
+    "class_type": "VRGDG_MiniMaxH3AudioDrive",
     "_meta": {
-      "title": "VAE Decode Audio"
+      "title": "Audio Drive (Lip Sync)"
     }
   }
 }

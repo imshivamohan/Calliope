@@ -165,8 +165,33 @@ def smart_fill_inputs(
             values[str(inp["nodeId"])] = path
 
     if ref_audios:
-        for inp, path in zip(ref_audio_slots(inputs), ref_audios):
-            values[str(inp["nodeId"])] = path
+        audio_slots = ref_audio_slots(inputs)
+        spk1_slot = next(
+            (
+                s
+                for s in audio_slots
+                if "speaker 1" in (s.get("label") or "").lower()
+                or "speaker_1" in (s.get("label") or "").lower()
+            ),
+            None,
+        )
+        spk2_slot = next(
+            (
+                s
+                for s in audio_slots
+                if "speaker 2" in (s.get("label") or "").lower()
+                or "speaker_2" in (s.get("label") or "").lower()
+            ),
+            None,
+        )
+        if spk1_slot and spk2_slot:
+            if len(ref_audios) > 0:
+                values[str(spk1_slot["nodeId"])] = ref_audios[0]
+            if len(ref_audios) > 1:
+                values[str(spk2_slot["nodeId"])] = ref_audios[1]
+        else:
+            for inp, path in zip(audio_slots, ref_audios):
+                values[str(inp["nodeId"])] = path
 
     if duration is not None:
         target = _find_by_role(inputs, "duration")

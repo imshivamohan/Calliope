@@ -37,7 +37,11 @@
     "image",
     "img",
     "vid",
-    "video"
+    "video",
+    "audio",
+    "sound",
+    "speech",
+    "voice"
   ],
   "agent_event_types": [
     "assistant/message",

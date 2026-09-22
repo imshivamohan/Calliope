@@ -28,6 +28,7 @@ INPUT_ROLE_ALIASES: dict[str, frozenset[str]] = {
 OUTPUT_ROLE_ALIASES: dict[str, frozenset[str]] = {
     "image": frozenset({"image", "img"}),
     "video": frozenset({"video", "vid"}),
+    "audio": frozenset({"audio", "sound", "voice", "speech"}),
 }
 
 

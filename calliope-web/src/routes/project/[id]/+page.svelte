@@ -120,6 +120,7 @@
 					client.invalidateQueries({ queryKey: ['assets'] });
 					client.invalidateQueries({ queryKey: ['story'] });
 					client.invalidateQueries({ queryKey: ['scenes'] });
+					client.invalidateQueries({ queryKey: ['playground-uploads'] });
 					return;
 				}
 				// Live per-job progress for ProgressBars (Activity log stays clean)
@@ -139,6 +140,7 @@
 					client.invalidateQueries({ queryKey: ['assets'] });
 					client.invalidateQueries({ queryKey: ['story'] });
 					client.invalidateQueries({ queryKey: ['scenes'] });
+					client.invalidateQueries({ queryKey: ['playground-uploads'] });
 				}
 			},
 			(state) => (connState = state),

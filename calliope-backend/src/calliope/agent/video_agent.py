@@ -195,6 +195,7 @@ def _get_workflow(
     workflow_id: int | None = None,
     *,
     clip_order_index: int = 1,
+    num_refs: int = 1,
 ) -> dict[str, Any] | None:
     conn = get_db(settings.db_path)
     try:
@@ -205,17 +206,23 @@ def _get_workflow(
         elif clip_order_index > 1:
             # Clips 2+ in a scene use the Extend workflow by default
             row = conn.execute(
-                "SELECT * FROM workflows WHERE name LIKE '%Extend%' AND kind = 'video' AND is_enabled = 1 LIMIT 1"
+                "SELECT * FROM workflows WHERE name LIKE '%Extend%' AND kind = 'video' AND is_enabled = 1 ORDER BY id DESC LIMIT 1"
             ).fetchone()
             if not row:
                 row = conn.execute(
                     "SELECT * FROM workflows WHERE kind = 'video' AND is_enabled = 1 ORDER BY id ASC LIMIT 1"
                 ).fetchone()
         else:
-            # Clip 1 in a scene uses Multi-Ref R2V workflow
+            # Clip 1 in a scene uses Multi-Ref R2V workflow matching available reference count
+            clamped_refs = max(1, min(5, num_refs))
             row = conn.execute(
-                "SELECT * FROM workflows WHERE (name LIKE '%r2v%' OR name LIKE '%ref%') AND name NOT LIKE '%Extend%' AND kind = 'video' AND is_enabled = 1 ORDER BY id DESC LIMIT 1"
+                "SELECT * FROM workflows WHERE (name LIKE ? OR name LIKE ?) AND kind = 'video' AND is_enabled = 1 ORDER BY id DESC LIMIT 1",
+                (f"%{clamped_refs}-Ref%", f"%{clamped_refs}ref%"),
             ).fetchone()
+            if not row:
+                row = conn.execute(
+                    "SELECT * FROM workflows WHERE (name LIKE '%r2v%' OR name LIKE '%ref%') AND name NOT LIKE '%Extend%' AND kind = 'video' AND is_enabled = 1 ORDER BY id DESC LIMIT 1"
+                ).fetchone()
             if not row:
                 row = conn.execute(
                     "SELECT * FROM workflows WHERE kind = 'video' AND is_enabled = 1 ORDER BY id ASC LIMIT 1"
@@ -327,7 +334,12 @@ async def preview_clip_prompt(
 
     scene = _scene_fields_from_clip(clip, characters)
     wf_id = workflow_id or clip.get("workflow_id")
-    workflow = _get_workflow(wf_id)
+    num_refs = len(characters) + (1 if (loc_image or loc_row) else 0)
+    workflow = _get_workflow(
+        wf_id,
+        clip_order_index=clip.get("order_index") or 1,
+        num_refs=num_refs,
+    )
     if not workflow:
         raise ValueError("No enabled video workflow found — configure one in Settings")
     inputs = parse_dynamic_inputs(_workflow_json(workflow))
@@ -445,16 +457,6 @@ async def enqueue_video_jobs(
 
             clip_order = clip.get("order_index") or 1
             wf_id = workflow_id or clip.get("workflow_id")
-            workflow = _get_workflow(wf_id, clip_order_index=clip_order)
-
-            workflow_json = _workflow_json(workflow)
-            inputs = parse_dynamic_inputs(workflow_json) if workflow_json else []
-            duration = clip.get("duration_sec") or clip.get("scene_duration_sec")
-
-            # Auto-chain clips 2+ when using an Extend workflow that possesses a video input
-            if clip_order > 1 and workflow and "extend" in (workflow.get("name") or "").lower():
-                if _video_input(inputs) and clip.get("chain_from_prev") is not False:
-                    clip["chain_from_prev"] = 1
 
             char_rows = conn.execute(
                 """
@@ -483,6 +485,18 @@ async def enqueue_video_jobs(
                     if not loc_image:
                         loc_image = loc_row["reference_image_path"]
 
+            num_refs = len(characters) + (1 if (loc_image or loc_row) else 0)
+            workflow = _get_workflow(wf_id, clip_order_index=clip_order, num_refs=num_refs)
+
+            workflow_json = _workflow_json(workflow)
+            inputs = parse_dynamic_inputs(workflow_json) if workflow_json else []
+            duration = clip.get("duration_sec") or clip.get("scene_duration_sec")
+
+            # Auto-chain clips 2+ when using an Extend workflow that possesses a video input
+            if clip_order > 1 and workflow and "extend" in (workflow.get("name") or "").lower():
+                if _video_input(inputs) and clip.get("chain_from_prev") is not False:
+                    clip["chain_from_prev"] = 1
+
             scene = _scene_fields_from_clip(clip, characters)
             profile = (workflow or {}).get("prompt_profile") or "prose"
             hash_input = {**clip, "character_ids": char_ids}
@@ -494,6 +508,27 @@ async def enqueue_video_jobs(
                 extra_values.update(
                     {k: v for k, v in input_values_override.items() if v not in (None, "")}
                 )
+
+            prompt_nodes = {
+                str(inp["nodeId"])
+                for inp in inputs
+                if input_has_role(inp, "prompt")
+            }
+            audio_nodes = {
+                str(inp["nodeId"])
+                for inp in inputs
+                if input_has_role(inp, "audio") or inp.get("kind") == "audio"
+            }
+
+            # Filter extra_values so prompt nodes and audio nodes aren't blindly overwritten by stale form strings
+            clean_extra = {
+                k: v for k, v in extra_values.items()
+                if str(k) not in prompt_nodes and str(k) not in audio_nodes
+            }
+
+            clip_audio = clip.get("audio_path")
+            ref_auds = [clip_audio] if clip_audio and Path(clip_audio).exists() else None
+
             if profile == "minimax_h3_ref":
                 subjects, ref_paths = _h3_subjects(characters, loc_row, loc_image, inputs)
                 # Prompt precedence: explicit request → saved (fresh) draft → LLM.
@@ -522,8 +557,9 @@ async def enqueue_video_jobs(
                     inputs,
                     prompt=prompt,
                     ref_images=ref_paths,
+                    ref_audios=ref_auds,
                     duration=duration,
-                    extra=extra_values,
+                    extra=clean_extra,
                 )
             else:
                 prompt = (prompts or {}).get(clip["id"]) or scene_video_prompt(
@@ -534,8 +570,9 @@ async def enqueue_video_jobs(
                     prompt=prompt,
                     character_image=char_image,
                     location_image=loc_image,
+                    ref_audios=ref_auds,
                     duration=duration,
-                    extra=extra_values,
+                    extra=clean_extra,
                 )
             # Stored per-clip setups override smart-fill's context choices
             # (e.g. an edited duration). smart_fill skips duration-role nodes
@@ -546,7 +583,48 @@ async def enqueue_video_jobs(
             }
             for k, v in explicit_final.items():
                 if v not in (None, ""):
+                    # In minimax_h3_ref profile, never let a stale flat form description overwrite
+                    # the computed or drafted H3 prompt unless explicitly formatted as an H3 prompt
+                    if str(k) in prompt_nodes:
+                        if profile == "minimax_h3_ref":
+                            if isinstance(v, str) and (
+                                "<Subject" in v or "<Audio" in v or "subject_definitions:" in v or "[reference generation]" in v
+                            ):
+                                values[str(k)] = v
+                                prompt = v
+                            continue
+                        elif not (input_values_override and str(k) in input_values_override):
+                            continue
+                    elif str(k) in audio_nodes:
+                        # Only accept if it is an explicit input_values_override or if no clip_audio exists
+                        is_override = bool(input_values_override and str(k) in input_values_override)
+                        if not is_override and clip_audio:
+                            continue
+                        if isinstance(v, str) and any(
+                            v.lower().endswith(ext)
+                            for ext in (".mp3", ".wav", ".aac", ".ogg", ".flac", ".m4a", ".wma")
+                        ):
+                            values[str(k)] = v
+                        continue
                     values[str(k)] = v
+
+            # Guarantee authoritative prompt in all prompt nodes
+            for pn in prompt_nodes:
+                if not values.get(pn):
+                    values[pn] = prompt
+
+            # Guarantee clip_audio in audio nodes, and clean out non-audio garbage
+            for an in audio_nodes:
+                val = values.get(an)
+                is_valid_audio = isinstance(val, str) and any(
+                    val.lower().endswith(ext)
+                    for ext in (".mp3", ".wav", ".aac", ".ogg", ".flac", ".m4a", ".wma")
+                )
+                if not is_valid_audio:
+                    if ref_auds and ref_auds[0]:
+                        values[an] = ref_auds[0]
+                    else:
+                        values.pop(an, None)
 
             # Guard against invalid media types (e.g. audio path mistakenly passed to image slot)
             for inp in inputs:

@@ -147,6 +147,14 @@
 					group: 'character',
 				});
 			}
+			if (c.voice_sample_path) {
+				opts.push({
+					label: `${c.name} · voice sample`,
+					path: c.voice_sample_path,
+					kind: 'audio',
+					group: 'character',
+				});
+			}
 		}
 		for (const loc of locs) {
 			if (loc.reference_image_path) {
@@ -176,6 +184,16 @@
 					kind: 'video',
 					group: 'clip',
 				});
+			}
+			for (const cl of sc.clips ?? []) {
+				if (cl.audio_path) {
+					opts.push({
+						label: `${t('queue.clipLabel', { n: sc.order_index })}.${cl.order_index} · Dialogue Audio`,
+						path: cl.audio_path,
+						kind: 'audio',
+						group: 'clip',
+					});
+				}
 			}
 		}
 		for (const up of $uploadsQuery.data ?? []) {
@@ -251,6 +269,22 @@
 			} else {
 				formValues = { ...seedClipDefaults(entry) };
 			}
+
+			// Ensure audio slot receives clip.audio_path if current value is empty or not a valid audio path
+			if (entry.clip.audio_path) {
+				const wf = workflowFor(entry.scene);
+				for (const inp of wf?.input_schema ?? []) {
+					if (normalizeInputRole(inp.role ?? null) === 'audio') {
+						const cur = formValues[inp.nodeId];
+						const isValidAudio =
+							typeof cur === 'string' &&
+							/\.(mp3|wav|aac|ogg|flac|m4a|wma)$/i.test(cur.trim());
+						if (!isValidAudio) {
+							formValues[inp.nodeId] = entry.clip.audio_path;
+						}
+					}
+				}
+			}
 		} else {
 			formValues = {};
 		}
@@ -320,8 +354,12 @@
 		const wf = workflowFor(entry.scene);
 		const secs = entry.clip.duration_sec ?? entry.scene.duration_sec;
 		for (const inp of wf?.input_schema ?? []) {
-			if (normalizeInputRole(inp.role ?? null) === 'duration' && secs != null) {
+			const role = normalizeInputRole(inp.role ?? null);
+			if (role === 'duration' && secs != null) {
 				seed[inp.nodeId] = secs;
+			}
+			if (role === 'audio' && entry.clip.audio_path) {
+				seed[inp.nodeId] = entry.clip.audio_path;
 			}
 		}
 		return seed;

@@ -1,0 +1,125 @@
+{
+  "1": {
+    "inputs": {
+      "model": "higgs-audio-v3-tts-4b",
+      "dtype": "auto",
+      "device": "auto",
+      "attention": "auto",
+      "download_if_missing": true
+    },
+    "class_type": "HiggsV3LoadModel",
+    "_meta": {
+      "title": "Higgs v3 Load Model"
+    }
+  },
+  "2": {
+    "inputs": {
+      "model": "whisper-large-v3-turbo (auto-download)",
+      "dtype": "auto",
+      "language": "auto",
+      "task": "transcribe",
+      "chunk_length_s": 30,
+      "download_if_missing": true,
+      "audio": [
+        "3",
+        0
+      ]
+    },
+    "class_type": "HiggsV3WhisperTranscribe",
+    "_meta": {
+      "title": "Higgs v3 Whisper Transcribe"
+    }
+  },
+  "3": {
+    "inputs": {
+      "audio": "fec69e16-WomanVoice6Sec.mp3",
+      "audioUI": "/api/view?filename=fec69e16-WomanVoice6Sec.mp3&type=input&subfolder=&rand=0.44272399871768975"
+    },
+    "class_type": "LoadAudio",
+    "_meta": {
+      "title": "(Input:audio) Speaker 2 Voice"
+    }
+  },
+  "4": {
+    "inputs": {
+      "audio": "chagantigaru.mp3",
+      "audioUI": "/api/view?filename=chagantigaru.mp3&type=input&subfolder=&rand=0.4324970836046069"
+    },
+    "class_type": "LoadAudio",
+    "_meta": {
+      "title": "(Input:audio) Speaker 1 Voice"
+    }
+  },
+  "5": {
+    "inputs": {
+      "filename_prefix": "audio/ComfyUI",
+      "quality": "V0",
+      "audioUI": "/api/view?filename=ComfyUI_00057.mp3&type=output&subfolder=audio&rand=0.9906941490866016",
+      "audio": [
+        "7",
+        0
+      ]
+    },
+    "class_type": "SaveAudioMP3",
+    "_meta": {
+      "title": "(Output:audio) Generated Audio"
+    }
+  },
+  "6": {
+    "inputs": {
+      "model": "whisper-large-v3-turbo (auto-download)",
+      "dtype": "auto",
+      "language": "auto",
+      "task": "transcribe",
+      "chunk_length_s": 30,
+      "download_if_missing": true,
+      "audio": [
+        "4",
+        0
+      ]
+    },
+    "class_type": "HiggsV3WhisperTranscribe",
+    "_meta": {
+      "title": "Higgs v3 Whisper Transcribe"
+    }
+  },
+  "7": {
+    "inputs": {
+      "text": "[Speaker_1]: Hello, I am speaker one. కానీ చాలా మందికి ఇంకా అది తెలియదు.\n[Speaker_2]: And I am speaker two. <|sfx:laughter|>Haha, nice to meet you.",
+      "num_speakers": "2",
+      "num_speakers.speaker_1_reference_text": [
+        "6",
+        0
+      ],
+      "num_speakers.speaker_2_reference_text": [
+        "2",
+        0
+      ],
+      "pause_between_speakers": 0.3,
+      "max_new_tokens": 2048,
+      "temperature": 1,
+      "top_p": 0.95,
+      "top_k": 50,
+      "seed": 1049725600,
+      "longform_chunking": false,
+      "words_per_chunk": 45,
+      "pause_between_chunks": 0.15,
+      "higgs_model": [
+        "1",
+        0
+      ],
+      "num_speakers.speaker_1_audio": [
+        "4",
+        0
+      ],
+      "num_speakers.speaker_2_audio": [
+        "3",
+        0
+      ]
+    },
+    "class_type": "HiggsV3MultiSpeaker",
+    "_meta": {
+      "title": "(Input:prompt) Multi-Speaker Dialogue"
+    }
+  }
+}

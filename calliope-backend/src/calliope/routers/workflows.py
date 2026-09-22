@@ -50,9 +50,10 @@ async def reanalyze_workflow(workflow_id: int) -> dict[str, Any]:
         workflow = json.loads(data["workflow_json"])
         inputs = parse_dynamic_inputs(workflow)
         outputs = parse_dynamic_outputs(workflow)
+        profile = detect_prompt_profile(workflow)
         conn.execute(
-            "UPDATE workflows SET input_schema = ?, output_schema = ? WHERE id = ?",
-            (json.dumps(inputs), json.dumps(outputs), workflow_id),
+            "UPDATE workflows SET input_schema = ?, output_schema = ?, prompt_profile = ? WHERE id = ?",
+            (json.dumps(inputs), json.dumps(outputs), profile, workflow_id),
         )
         conn.commit()
         fresh = conn.execute(

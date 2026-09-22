@@ -103,8 +103,8 @@
         0
       ],
       "latent_image": [
-        "219",
-        1
+        "7001",
+        0
       ]
     },
     "class_type": "SamplerCustomAdvanced",
@@ -266,7 +266,7 @@
     },
     "class_type": "MathExpression|pysssss",
     "_meta": {
-      "title": "Math Expression 🐍"
+      "title": "Math Expression \ud83d\udc0d"
     }
   },
   "5975": {
@@ -328,13 +328,13 @@
         0
       ],
       "audio": [
-        "6063:4848",
-        0
+        "7001",
+        1
       ]
     },
     "class_type": "VHS_VideoCombine",
     "_meta": {
-      "title": "Video Output 2 (Output)"
+      "title": "Video Output (Output:video)"
     }
   },
   "5986": {
@@ -348,7 +348,7 @@
   },
   "6005": {
     "inputs": {
-      "value": "integrated_multimodal_description: [Shot 1] Cinematic, live-action, shot on iPhone, a vertical selfie frame from a phone held at arm's length above eye level. A young woman in her mid-twenties with sun-kissed tan skin and loose wavy chestnut brown hair, wearing a white cropped t-shirt with a gold pendant necklace, looks directly into the phone lens, her face filling the centre of frame. Warm golden hour sunlight hits the right side of her face from a low sun behind the trees, casting a soft amber glow across her skin. Behind her, a city park is blurred into soft green and gold bokeh — trees, dappled light, a hot pink sunset sky bleeding through the leaves. The camera holds static in selfie framing. The young woman's lips move as she speaks with a bright, energetic voice with a slight North American accent (S1): <d>[English] Oh my god, you guys, it is actually perfect out here right now.</d> Her mouth closes after the last word, then she breaks into a wide grin, teeth showing, the skin at the corners of her eyes crinkling. She tilts her head slightly to the right, the grin fading to a soft expression as her lips move and she speaks again, her voice warmer (S1): <d>[English] Like, I didn't want to leave.</d> Her mouth closes. She presses her lips together, then points her index finger at the camera and speaks with a playful tone, her lips forming each word (S1): <d>[English] So I'm not.</d> Her mouth closes, and the wide grin returns. With her free left hand she pushes the windblown hair behind her ear, her gold bracelet sliding down her wrist. She raises her free hand in a quick peace sign next to her cheek, her smile widening, and laughs — a short, genuine laugh, her mouth opening, shoulders shaking once, her eyes squeezing shut for a beat, then opening again. She drops the peace sign and brings the phone slightly closer, her face growing larger in frame, the grin settling into a warm smile. The camera pushes in with small amplitude at slow speed as the phone draws closer.\n\noverall_soundscape: A warm breeze carries birdsong and the distant hum of a city at golden hour. The woman's laugh is clear and close to the phone mic — short, genuine, with a slight exhale. Loose hair rustles as she tucks it behind her ear, and the gold bracelet lightly clinks against itself on her wrist.\n\nnon_diegetic_music: N/A"
+      "value": "Cinematic, high-definition character shot maintaining identity from <Picture 1>.\n[Shot 1] The subject in <Picture 1> is fully referenced. The subject faces camera with steady posture. The subject speaks the dialogue in <Audio 1>, their mouth, lips, and jaw moving in exact, natural synchronization with <Audio 1>, shaping each syllable clearly: <d>[English] My voice and lips are fully aligned with this sound.</d>\n\noverall_soundscape:\nN/A\n\nnon_diegetic_music:\nN/A"
     },
     "class_type": "PrimitiveStringMultiline",
     "_meta": {
@@ -411,7 +411,7 @@
         "lora": "minimax-h3\\h3-realism-people-t2v-i2v-r2v(r34l1sm).safetensors",
         "strength": 1
       },
-      "➕ Add Lora": "",
+      "\u2795 Add Lora": "",
       "model": [
         "6006",
         0
@@ -440,7 +440,12 @@
       "model": [
         "6010",
         0
-      ]
+      ],
+      "route_coverage": 0.0,
+      "min_exact_fraction": 0.0,
+      "int8_pv": true,
+      "use_tma": false,
+      "dense_blocks": ""
     },
     "class_type": "SolAttnPatch",
     "_meta": {
@@ -479,7 +484,7 @@
     },
     "class_type": "VHS_LoadImagePath",
     "_meta": {
-      "title": "Load Image (Path) 🎥🅥🅗🅢"
+      "title": "Load Image (Path) \ud83c\udfa5\ud83c\udd65\ud83c\udd57\ud83c\udd62"
     }
   },
   "6062:5570": {
@@ -822,20 +827,33 @@
       "title": "VAE Decode (Tiled)"
     }
   },
-  "6063:4848": {
+  "7000": {
     "inputs": {
-      "samples": [
-        "6061:4973",
+      "audio": "WomanVoice6Sec.mp3"
+    },
+    "class_type": "LoadAudio",
+    "_meta": {
+      "title": "Audio (Input:audio)"
+    }
+  },
+  "7001": {
+    "inputs": {
+      "av_latent": [
+        "219",
         1
       ],
+      "source_audio": [
+        "7000",
+        0
+      ],
       "audio_vae": [
-        "6062:5570",
+        "208",
         0
       ]
     },
-    "class_type": "LTXVAudioVAEDecode",
+    "class_type": "VRGDG_MiniMaxH3AudioDrive",
     "_meta": {
-      "title": "LTXV Audio VAE Decode"
+      "title": "Audio Drive (Lip Sync)"
     }
   }
 }

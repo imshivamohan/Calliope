@@ -1,5 +1,5 @@
 export type ComfyInputKind = 'text' | 'textarea' | 'number' | 'image' | 'image_url' | 'audio' | 'video';
-export type ComfyOutputKind = 'image' | 'video' | 'other';
+export type ComfyOutputKind = 'image' | 'video' | 'audio' | 'other';
 
 export interface ComfyDynamicInput {
 	nodeId: string;
@@ -28,7 +28,7 @@ export interface WorkflowNode {
 export interface Workflow {
 	id: number;
 	name: string;
-	kind: 'image' | 'video';
+	kind: 'image' | 'video' | 'audio';
 	workflow_json: Record<string, WorkflowNode>;
 	input_schema: ComfyDynamicInput[];
 	output_schema: ComfyDynamicOutput[];

@@ -1,0 +1,63 @@
+{
+  "1": {
+    "inputs": {
+      "text": [
+        "3",
+        0
+      ],
+      "max_new_tokens": 2048,
+      "temperature": 1,
+      "top_p": 0.95,
+      "top_k": 50,
+      "seed": 551087592,
+      "longform_chunking": true,
+      "words_per_chunk": 45,
+      "pause_between_chunks": 0.15,
+      "higgs_model": [
+        "4",
+        0
+      ]
+    },
+    "class_type": "HiggsV3Generate",
+    "_meta": {
+      "title": "Higgs v3 Generate"
+    }
+  },
+  "2": {
+    "inputs": {
+      "filename_prefix": "audio/ComfyUI",
+      "quality": "320k",
+      "audioUI": "",
+      "audio": [
+        "1",
+        0
+      ]
+    },
+    "class_type": "SaveAudioMP3",
+    "_meta": {
+      "title": "(Output:audio) Generated Audio"
+    }
+  },
+  "3": {
+    "inputs": {
+      "text": "[HOOK]\n\n\"Imagine this...\n\nమీరు ఇప్పుడు ఈ వీడియో చూస్తున్నప్పుడే...\n\nIndia's AI Revolution has already started...\n\nకానీ చాలా మందికి ఇంకా అది తెలియదు.\n"
+    },
+    "class_type": "ttN text",
+    "_meta": {
+      "title": "(Input:prompt) Dialogue Text"
+    }
+  },
+  "4": {
+    "inputs": {
+      "model": "higgs-audio-v3-tts-4b",
+      "dtype": "auto",
+      "device": "auto",
+      "attention": "auto",
+      "download_if_missing": true
+    },
+    "class_type": "HiggsV3LoadModel",
+    "_meta": {
+      "title": "Higgs v3 Load Model"
+    }
+  }
+}

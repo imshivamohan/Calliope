@@ -19,6 +19,8 @@ SCRIPT_GENERATION_SYSTEM = (
     "in it — exactly like a produced script. Scenes may be long; a later 'break into shots' "
     "pass splits each scene into short renderable clips, so never compress the content to fit "
     "a single video generation. "
+    "CRITICAL FOR AUDIO: Every dialogue line MUST include an emotional delivery cue in parentheses, "
+    "e.g. 'SPEAKER (whispering): line' or 'SPEAKER (excited): line', to drive Higgs Audio emotional synthesis. "
     "Always respond with a single valid JSON object. "
     "HARD RULE: the scenes array length must equal required_scene_count from the user message. "
     "Returning fewer scenes is a failure. Respect the user's chosen scene count."
@@ -369,11 +371,15 @@ where. Rules:
 4. LIGHTING & MOOD. Named light sources, color palette, emotional tone of the moment.
 Describe only what is VISIBLE (no inner thoughts; no sounds or music — dialogue covers audio).
 
-=== DIALOGUE (verbatim fidelity) ===
-Every line the scene needs MUST appear in "dialog", formatted 'SPEAKER: line', one per
+=== DIALOGUE (verbatim fidelity & emotional delivery) ===
+Every line the scene needs MUST appear in "dialog", formatted 'SPEAKER (delivery cue): line', one per
 line, in play order. NEVER paraphrase, summarize, or drop lines ("they argue about the
-money" is a FAILURE — write the actual lines). When delivery matters for performance,
-add a brief cue in parentheses after the speaker name, e.g. "MIA (whispering): line".
+money" is a FAILURE — write the actual lines).
+CRITICAL FOR AUDIO TTS: ALWAYS include an expressive emotional delivery cue in parentheses
+after the speaker name for EVERY dialogue line (e.g. "MIA (whispering): line", "JOHN (furious): line",
+"ALICE (excited): line", "BOB (laughing): line", "MIA (sobbing): line", "NARRATOR (dramatic): line").
+Our audio pipeline uses Higgs Audio v3, which synthesizes emotional delivery, prosodic hooks, styles,
+and vocalizations directly from these cues.
 
 Respond ONLY with JSON:
 {{
@@ -493,11 +499,15 @@ where. Rules:
 4. LIGHTING & MOOD. Named light sources, color palette, emotional tone of the moment.
 Describe only what is VISIBLE (no inner thoughts; no sounds or music — dialogue covers audio).
 
-=== DIALOGUE (verbatim fidelity) ===
-Every line the scene needs MUST appear in "dialog", formatted 'SPEAKER: line', one per
+=== DIALOGUE (verbatim fidelity & emotional delivery) ===
+Every line the scene needs MUST appear in "dialog", formatted 'SPEAKER (delivery cue): line', one per
 line, in play order. NEVER paraphrase, summarize, or drop lines ("they argue about the
-money" is a FAILURE — write the actual lines). When delivery matters for performance,
-add a brief cue in parentheses after the speaker name, e.g. "MIA (whispering): line".
+money" is a FAILURE — write the actual lines).
+CRITICAL FOR AUDIO TTS: ALWAYS include an expressive emotional delivery cue in parentheses
+after the speaker name for EVERY dialogue line (e.g. "MIA (whispering): line", "JOHN (furious): line",
+"ALICE (excited): line", "BOB (laughing): line", "MIA (sobbing): line", "NARRATOR (dramatic): line").
+Our audio pipeline uses Higgs Audio v3, which synthesizes emotional delivery, prosodic hooks, styles,
+and vocalizations directly from these cues.
 
 Respond ONLY with JSON:
 {{
@@ -672,10 +682,12 @@ MINIMAX_H3_REF_SYSTEM = (
     "shot. Introduce each <Subject N> at its first visible appearance with its referenced "
     "features, position, and action; reuse the label afterwards. Describe only what is "
     "visible except sound/dialogue.\n"
-    "5. Dialogue: give each speaker a stable ID in order of first speech — '<Subject N> (S1) "
-    "says, <d>[English] …</d>'. A speaker with no defined subject uses a stable voice "
-    "description, e.g. 'A narrator (S2) says, <d>[English] …</d>'. Keep the original "
-    "language of every line inside <d> and tag it, e.g. [English], [Chinese].\n"
+    "5. Dialogue and Lip Sync: give each speaker a stable ID in order of first speech — '<Subject N> (S1) "
+    "says, <d>[English] …</d>'. Map speakers to subjects by name (e.g. 'PARVATI' -> 'Goddess Parvati'). "
+    "When dialogue or reference audio is present, explicitly designate which subject speaks: "
+    "'<Subject N> speaks the dialogue in <Audio 1>, head steady and face clearly visible, "
+    "mouth, lips, and jaw articulating each syllable in exact synchronization with <Audio 1>.' "
+    "State that other characters listen attentively with mouths closed.\n"
     "6. overall_soundscape: ambience and physical sounds across the clip, or 'N/A'. "
     "non_diegetic_music: audience-only score (instrumentation, tempo), or 'N/A'.\n"
     "Write everything in English except dialogue/lyrics inside <d> and visible on-screen text."
@@ -690,6 +702,44 @@ def _subject_roster_lines(subjects: list[dict[str, Any]]) -> str:
             f"(reference image slot {s['index']}): {s.get('appearance') or 'no description'}"
         )
     return "\n".join(lines)
+
+
+def _match_speaker_subject(speaker: str, subjects: list[dict[str, Any]]) -> int | None:
+    """Resolve a dialogue speaker string to its <Subject N> index.
+
+    Tolerates differences between script speaker names and character roster
+    names (e.g. 'PARVATI' -> 'Goddess Parvati', 'GANESHA' -> 'Little Ganesha').
+    """
+    clean_speaker = re.sub(r"[^a-zA-Z0-9\s]", "", speaker).strip().lower()
+    if not clean_speaker:
+        return None
+    speaker_words = set(clean_speaker.split())
+
+    # 1. Exact match
+    for s in subjects:
+        name = (s.get("name") or "").strip().lower()
+        if clean_speaker == name:
+            return s["index"]
+
+    # 2. Substring match
+    for s in subjects:
+        name = (s.get("name") or "").strip().lower()
+        if name and (clean_speaker in name or name in clean_speaker):
+            return s["index"]
+
+    # 3. Word-set overlap
+    best_idx: int | None = None
+    best_overlap = 0
+    for s in subjects:
+        name = (s.get("name") or "").strip().lower()
+        name_clean = re.sub(r"[^a-zA-Z0-9\s]", "", name).strip().lower()
+        name_words = set(name_clean.split())
+        overlap = len(speaker_words & name_words)
+        if overlap > best_overlap:
+            best_overlap = overlap
+            best_idx = s["index"]
+
+    return best_idx
 
 
 def build_minimax_h3_ref_messages(
@@ -758,7 +808,7 @@ def minimax_h3_ref_fallback(scene: dict[str, Any], subjects: list[dict[str, Any]
     # An optional delivery cue — 'MIA (whispering): line' — is kept as performance direction.
     dialog_lines = []
     speaker_ids: dict[str, int] = {}
-    name_to_subject = {(s.get("name") or "").strip().lower(): s["index"] for s in subjects}
+    speaking_subjects: set[int] = set()
     for raw in (scene.get("dialog") or "").splitlines():
         if ":" not in raw:
             continue
@@ -773,9 +823,30 @@ def minimax_h3_ref_fallback(scene: dict[str, Any], subjects: list[dict[str, Any]
         if key not in speaker_ids:
             speaker_ids[key] = len(speaker_ids) + 1
         sid = speaker_ids[key]
-        subj_idx = name_to_subject.get(key)
-        who = f"<Subject {subj_idx}> (S{sid})" if subj_idx else f"{base.title()} (S{sid})"
+        subj_idx = _match_speaker_subject(base, subjects)
+        if subj_idx:
+            speaking_subjects.add(subj_idx)
+            who = f"<Subject {subj_idx}> (S{sid})"
+        else:
+            who = f"{base.title()} (S{sid})"
         dialog_lines.append(f"{who} says{f' {cue}' if cue else ''}, <d>[English] {line}</d>")
+
+    if speaking_subjects:
+        for idx in sorted(speaking_subjects):
+            sync_line = (
+                f"<Subject {idx}> speaks the dialogue in <Audio 1>, head steady and face clearly visible, "
+                f"mouth, lips, and jaw articulating each syllable in exact synchronization with <Audio 1>."
+            )
+            dialog_lines.append(sync_line)
+        other_subjects = [
+            s["index"]
+            for s in subjects
+            if s.get("kind") == "character" and s["index"] not in speaking_subjects
+        ]
+        if other_subjects:
+            others_str = ", ".join(f"<Subject {i}>" for i in sorted(other_subjects))
+            dialog_lines.append(f"{others_str} listen attentively with mouths closed.")
+
     if dialog_lines:
         body += "\n" + "\n".join(dialog_lines)
 

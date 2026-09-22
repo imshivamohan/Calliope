@@ -53,7 +53,9 @@
 						: 'Character Reference';
 			toast.success(`Voice generation queued (${voiceName})`);
 			await client.invalidateQueries({ queryKey: ['project', projectId] });
-			await client.invalidateQueries({ queryKey: ['jobs', projectId] });
+			await client.invalidateQueries({ queryKey: ['jobs'] });
+			await client.invalidateQueries({ queryKey: ['scenes'] });
+			await client.invalidateQueries({ queryKey: ['playground-uploads'] });
 		} catch (err) {
 			toast.error(err instanceof Error ? err.message : 'Failed to queue voice generation');
 		} finally {

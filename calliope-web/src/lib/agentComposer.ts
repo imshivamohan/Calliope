@@ -2,7 +2,7 @@
  * Shared types and helpers for the Agent composer (@workflow mentions + attachments).
  */
 
-export type WorkflowKind = 'image' | 'video';
+export type WorkflowKind = 'image' | 'video' | 'audio';
 export type AttachmentKind = 'image' | 'video' | 'audio' | 'document';
 
 export interface WorkflowMention {

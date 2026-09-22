@@ -310,7 +310,7 @@ export const workflows = {
 		api<Workflow>(`/api/workflows/${id}/reanalyze`, { method: 'POST' }),
 	create: (payload: {
 		name: string;
-		kind: 'image' | 'video';
+		kind: 'image' | 'video' | 'audio';
 		workflow_json: Record<string, unknown>;
 		description?: string;
 		prompt_profile?: string;

@@ -1,0 +1,241 @@
+{
+  "id": "fbd540b1-2b24-4d95-a6fe-9dde41ec59ca",
+  "revision": 0,
+  "last_node_id": 4,
+  "last_link_id": 3,
+  "nodes": [
+    {
+      "id": 2,
+      "type": "SaveAudioMP3",
+      "pos": [
+        4599.758997124751,
+        3504.7221442926934
+      ],
+      "size": [
+        373.2109221440551,
+        153.10684607153462
+      ],
+      "flags": {},
+      "order": 3,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "audio",
+          "type": "AUDIO",
+          "link": 3
+        }
+      ],
+      "outputs": [
+        {
+          "name": "audio",
+          "type": "AUDIO",
+          "links": null
+        }
+      ],
+      "properties": {
+        "cnr_id": "comfy-core",
+        "ver": "0.24.0",
+        "Node name for S&R": "SaveAudioMP3",
+        "ue_properties": {
+          "widget_ue_connectable": {},
+          "version": "7.8",
+          "input_ue_unconnectable": {}
+        }
+      },
+      "widgets_values": [
+        "audio/ComfyUI",
+        "320k"
+      ],
+      "title": "(Output:audio) Generated Audio"
+    },
+    {
+      "id": 4,
+      "type": "HiggsV3LoadModel",
+      "pos": [
+        3783.3800238006115,
+        2648.5936683326577
+      ],
+      "size": [
+        284.7335674558167,
+        154
+      ],
+      "flags": {},
+      "order": 0,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "higgs_model",
+          "type": "HIGGSV3TTS_MODEL",
+          "links": [
+            1
+          ]
+        }
+      ],
+      "properties": {
+        "cnr_id": "Higgs_v3-TTS-ComfyUI",
+        "ver": "dfe191bef0a622bd52b67f5fe53a50aedac412bc",
+        "Node name for S&R": "HiggsV3LoadModel",
+        "ue_properties": {
+          "widget_ue_connectable": {},
+          "version": "7.8",
+          "input_ue_unconnectable": {}
+        },
+        "aux_id": "Saganaki22/Higgs_v3-TTS-ComfyUI"
+      },
+      "widgets_values": [
+        "higgs-audio-v3-tts-4b",
+        "auto",
+        "auto",
+        "auto",
+        true
+      ]
+    },
+    {
+      "id": 3,
+      "type": "ttN text",
+      "pos": [
+        4667.062599484316,
+        2527.2417317038316
+      ],
+      "size": [
+        400,
+        200
+      ],
+      "flags": {},
+      "order": 1,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "text",
+          "type": "STRING",
+          "links": [
+            2
+          ]
+        }
+      ],
+      "properties": {
+        "cnr_id": "comfyui_tinyterranodes",
+        "ver": "2.0.11",
+        "Node name for S&R": "ttN text",
+        "ue_properties": {
+          "widget_ue_connectable": {},
+          "input_ue_unconnectable": {},
+          "version": "7.8"
+        },
+        "ttNnodeVersion": "1.0.0"
+      },
+      "widgets_values": [
+        "[HOOK]\n\n\"Imagine this...\n\nమీరు ఇప్పుడు ఈ వీడియో చూస్తున్నప్పుడే...\n\nIndia's AI Revolution has already started...\n\nకానీ చాలా మందికి ఇంకా అది తెలియదు.\n\nToday, AI is transforming Banking, Healthcare, Software, Education, and Businesses across India.\n\nభారతదేశంలోని పెద్ద కంపెనీల్లో దాదాపు 87% ఇప్పటికే AI‌ని ఉపయోగిస్తున్నాయి.\n\nMillions of professionals are using AI every week to work faster, smarter, and more efficiently.\n\nకానీ అసలు నిజం ఏంటంటే...\n\nAI won't replace everyone...\n\nAI use చేయడం తెలిసిన వాళ్లు... తెలియని వాళ్ల కంటే ముందుకు వెళ్తారు.\n\nThe future belongs to people who learn, adapt, and innovate.\n\nఅయితే ప్రశ్న ఒక్కటే...\n\nAre you ready for India's AI Revolution?\""
+      ],
+      "title": "(Input:prompt) Dialogue Text"
+    },
+    {
+      "id": 1,
+      "type": "HiggsV3Generate",
+      "pos": [
+        4591.531785785395,
+        2906.6209020011656
+      ],
+      "size": [
+        378.41814342060025,
+        542.1053668590478
+      ],
+      "flags": {},
+      "order": 2,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "higgs_model",
+          "type": "HIGGSV3TTS_MODEL",
+          "link": 1
+        },
+        {
+          "name": "text",
+          "type": "STRING",
+          "widget": {
+            "name": "text"
+          },
+          "link": 2
+        }
+      ],
+      "outputs": [
+        {
+          "name": "audio",
+          "type": "AUDIO",
+          "links": [
+            3
+          ]
+        }
+      ],
+      "properties": {
+        "cnr_id": "Higgs_v3-TTS-ComfyUI",
+        "ver": "e483a63ef5497331c31883d8b73a5fda97087aed",
+        "Node name for S&R": "HiggsV3Generate",
+        "ue_properties": {
+          "widget_ue_connectable": {},
+          "version": "7.8",
+          "input_ue_unconnectable": {}
+        }
+      },
+      "widgets_values": [
+        "Good morning everyone,\n\nToday, I’d like to talk about Artificial Intelligence, commonly known as AI. AI is a technology that allows computers and machines to perform tasks that usually require human intelligence, such as learning, reasoning, recognizing patterns, and making decisions.\n\n",
+        2048,
+        1,
+        0.95,
+        50,
+        551087592,
+        "fixed",
+        true,
+        45,
+        0.15
+      ]
+    }
+  ],
+  "links": [
+    [
+      1,
+      4,
+      0,
+      1,
+      0,
+      "HIGGSV3TTS_MODEL"
+    ],
+    [
+      2,
+      3,
+      0,
+      1,
+      1,
+      "STRING"
+    ],
+    [
+      3,
+      1,
+      0,
+      2,
+      0,
+      "AUDIO"
+    ]
+  ],
+  "groups": [],
+  "config": {},
+  "extra": {
+    "ue_links": [],
+    "ds": {
+      "scale": 0.48126345094901135,
+      "offset": [
+        -2685.6808627850337,
+        -2041.124199197347
+      ]
+    },
+    "links_added_by_ue": [],
+    "frontendVersion": "1.45.20",
+    "VHS_latentpreview": false,
+    "VHS_latentpreviewrate": 0,
+    "VHS_MetadataImage": true,
+    "VHS_KeepIntermediate": true
+  },
+  "version": 0.4
+}

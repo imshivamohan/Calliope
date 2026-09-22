@@ -188,17 +188,17 @@ class ExpandClipsRequest(BaseModel):
 
 class WorkflowCreate(BaseModel):
     name: str = Field(..., min_length=1)
-    kind: Literal["image", "video"] = "image"
+    kind: Literal["image", "video", "audio"] = "image"
     workflow_json: dict[str, Any]
     description: str | None = None
-    prompt_profile: Literal["prose", "minimax_h3_ref"] | None = None
+    prompt_profile: str | None = None
 
 
 class WorkflowUpdate(BaseModel):
     name: str | None = None
-    kind: Literal["image", "video"] | None = None
+    kind: Literal["image", "video", "audio"] | None = None
     description: str | None = None
-    prompt_profile: Literal["prose", "minimax_h3_ref"] | None = None
+    prompt_profile: str | None = None
     is_enabled: bool | None = None
 
 

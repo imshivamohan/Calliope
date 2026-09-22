@@ -34,7 +34,7 @@
   },
   "138": {
     "inputs": {
-      "value": ""
+      "value": "subject_definitions:\n<Subject 1> is the character in <Picture 1>.\n<Subject 2> is the character in <Picture 2>.\n<Subject 3> is the character in <Picture 3>.\n<Subject 4> is the character in <Picture 4>.\n<Subject 5> is the environment in <Picture 5>.\n\nsummary:\n[reference generation] In the setting of <Subject 5>, <Subject 1> speaks.\n\nretention_analysis:\n<Subject 1> (appears in [Shot 1]): fully_preserved.\n<Subject 2> (appears in [Shot 1]): fully_preserved.\n<Subject 3> (appears in [Shot 1]): fully_preserved.\n<Subject 4> (appears in [Shot 1]): fully_preserved.\n<Subject 5> (appears in [Shot 1]): fully_preserved.\n\ndetailed_description:\nCinematic lighting, rich textures.\n[Shot 1] Medium shot. <Subject 1> speaks the dialogue in <Audio 1>, head steady and face clearly visible. <Subject 1>'s mouth and lips articulate each syllable in exact synchronization with <Audio 1>. Other characters listen with mouths closed.\n<Subject 1> (S1) says, <d>[English] Dialogue line here.</d>\n\noverall_soundscape:\nN/A\n\nnon_diegetic_music:\nN/A"
     },
     "class_type": "PrimitiveStringMultiline",
     "_meta": {
@@ -240,8 +240,8 @@
         0
       ],
       "latent_image": [
-        "178",
-        1
+        "185",
+        0
       ]
     },
     "class_type": "SamplerCustomAdvanced",
@@ -267,18 +267,11 @@
   },
   "175": {
     "inputs": {
-      "samples": [
-        "173",
-        0
-      ],
-      "vae": [
-        "165",
-        0
-      ]
+      "audio": "WomanVoice6Sec.mp3"
     },
-    "class_type": "VAEDecodeAudio",
+    "class_type": "LoadAudio",
     "_meta": {
-      "title": "VAE Decode Audio"
+      "title": "Audio (Input:audio)"
     }
   },
   "176": {
@@ -298,8 +291,8 @@
         0
       ],
       "audio": [
-        "175",
-        0
+        "185",
+        1
       ]
     },
     "class_type": "VHS_VideoCombine",
@@ -357,6 +350,10 @@
       "ref_images.ref_image_4": [
         "179",
         0
+      ],
+      "ref_audios.ref_audio_0": [
+        "175",
+        0
       ]
     },
     "class_type": "MiniMaxH3ReferenceToVideo",
@@ -385,6 +382,26 @@
     "class_type": "LoraLoaderModelOnly",
     "_meta": {
       "title": "Load LoRA"
+    }
+  },
+  "185": {
+    "inputs": {
+      "av_latent": [
+        "178",
+        1
+      ],
+      "source_audio": [
+        "175",
+        0
+      ],
+      "audio_vae": [
+        "165",
+        0
+      ]
+    },
+    "class_type": "VRGDG_MiniMaxH3AudioDrive",
+    "_meta": {
+      "title": "Audio Drive (Lip Sync)"
     }
   }
 }

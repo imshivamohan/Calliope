@@ -4,7 +4,7 @@ from __future__ import annotations
 from typing import Literal
 
 ComfyInputKind = Literal["text", "textarea", "number", "image", "image_url", "audio", "video"]
-ComfyOutputKind = Literal["image", "video", "other"]
+ComfyOutputKind = Literal["image", "video", "audio", "other"]
 PatchField = Literal["image", "url", "audio", "video", "file", "text", "value", "int", "float"]
 
 TEXT_AREA_CLASSES = frozenset(
@@ -15,6 +15,8 @@ TEXT_AREA_CLASSES = frozenset(
         "ImpactWildcardProcessor",
         "PrimitiveStringMultiline",
         "PrimitiveString",
+        "ttN text",
+        "HiggsV3MultiSpeaker",
     }
 )
 NUMBER_CLASSES = frozenset(
@@ -31,6 +33,9 @@ VIDEO_OUTPUT_CLASSES = frozenset(
 )
 IMAGE_OUTPUT_CLASSES = frozenset(
     {"SaveImage", "PreviewImage", "SaveImageWebsocket", "ETN_SendImageWebSocket"}
+)
+AUDIO_OUTPUT_CLASSES = frozenset(
+    {"SaveAudioMP3", "SaveAudio", "AudioSave", "PreviewAudio", "SaveAudioOpus"}
 )
 
 
@@ -91,6 +96,8 @@ def class_to_patch_field(class_type: str) -> PatchField:
 
 
 def class_to_output_kind(class_type: str) -> ComfyOutputKind:
+    if class_type in AUDIO_OUTPUT_CLASSES or "audio" in class_type.lower():
+        return "audio"
     if class_type in VIDEO_OUTPUT_CLASSES or "video" in class_type.lower():
         return "video"
     if class_type in IMAGE_OUTPUT_CLASSES or "image" in class_type.lower():

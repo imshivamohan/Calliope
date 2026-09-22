@@ -24,7 +24,7 @@
 	let pendingJson = $state<Record<string, unknown> | null>(null);
 
 	let wfName = $state('');
-	let wfKind = $state<'image' | 'video'>('image');
+	let wfKind = $state<'image' | 'video' | 'audio'>('image');
 	let wfProfile = $state('prose');
 	let wfDescription = $state('');
 	let saving = $state(false);
@@ -164,6 +164,7 @@
 	let list = $derived($workflowsQuery.data ?? []);
 	let imageCount = $derived(list.filter((w) => w.kind === 'image').length);
 	let videoCount = $derived(list.filter((w) => w.kind === 'video').length);
+	let audioCount = $derived(list.filter((w) => w.kind === 'audio').length);
 </script>
 
 <section class="block">
@@ -176,6 +177,7 @@
 			<span class="stat">{t('wf.countSaved', { count: list.length })}</span>
 			<span class="stat image">{t('wf.countImage', { count: imageCount })}</span>
 			<span class="stat video">{t('wf.countVideo', { count: videoCount })}</span>
+			<span class="stat audio">{t('wf.countAudio', { count: audioCount })}</span>
 		</div>
 	</header>
 
@@ -272,6 +274,7 @@
 					<select class="field-select" bind:value={wfKind}>
 						<option value="image">{t('wf.kindImage')}</option>
 						<option value="video">{t('wf.kindVideo')}</option>
+						<option value="audio">{t('wf.kindAudio')}</option>
 					</select>
 				</label>
 			</div>
@@ -280,6 +283,7 @@
 				<select class="field-select" bind:value={wfProfile}>
 					<option value="prose">{t('wf.profileProse')}</option>
 					<option value="minimax_h3_ref">{t('wf.profileH3')}</option>
+					<option value="higgs_audio">{t('wf.profileHiggsAudio')}</option>
 				</select>
 			</label>
 			<label class="field">
@@ -337,6 +341,7 @@
 								<select class="field-select" bind:value={editProfile}>
 									<option value="prose">{t('wf.profileProse')}</option>
 									<option value="minimax_h3_ref">{t('wf.profileH3')}</option>
+									<option value="higgs_audio">{t('wf.profileHiggsAudio')}</option>
 								</select>
 							</label>
 							<p class="field-hint">{t('wf.jsonLocked')}</p>
@@ -346,15 +351,17 @@
 							</div>
 						{:else}
 							<div class="card-top">
-								<div class="tile" class:video={wf.kind === 'video'}>
-									{wf.kind === 'video' ? 'VID' : 'IMG'}
+								<div class="tile" class:video={wf.kind === 'video'} class:audio={wf.kind === 'audio'}>
+									{wf.kind === 'video' ? 'VID' : wf.kind === 'audio' ? 'AUD' : 'IMG'}
 								</div>
 								<div class="card-meta">
 									<strong>{wf.name}</strong>
 									<div class="tags">
-										<span class="kind-badge" class:video={wf.kind === 'video'}>{wf.kind}</span>
+										<span class="kind-badge" class:video={wf.kind === 'video'} class:audio={wf.kind === 'audio'}>{wf.kind}</span>
 										{#if wf.prompt_profile === 'minimax_h3_ref'}
 											<span class="kind-badge h3">H3-ref</span>
+										{:else if wf.prompt_profile === 'higgs_audio'}
+											<span class="kind-badge audio">Higgs-TTS</span>
 										{/if}
 										<span class="count">{t('wf.inputsCount', { count: wf.input_schema?.length ?? 0 })}</span>
 										<span class="count">{t('wf.outputsCount', { count: wf.output_schema?.length ?? 0 })}</span>
@@ -472,6 +479,10 @@
 	.stat.video {
 		color: var(--info);
 		border-color: rgba(59, 130, 246, 0.35);
+	}
+	.stat.audio {
+		color: #f59e0b;
+		border-color: rgba(245, 158, 11, 0.35);
 	}
 	.panel,
 	.card {
@@ -639,6 +650,10 @@
 		background: rgba(59, 130, 246, 0.12);
 		color: var(--info);
 	}
+	.tile.audio {
+		background: rgba(245, 158, 11, 0.12);
+		color: #f59e0b;
+	}
 	.card-meta strong {
 		font-size: 15px;
 		font-family: var(--font-display);
@@ -661,6 +676,10 @@
 	.kind-badge.video {
 		background: rgba(59, 130, 246, 0.15);
 		color: var(--info);
+	}
+	.kind-badge.audio {
+		background: rgba(245, 158, 11, 0.15);
+		color: #f59e0b;
 	}
 	.kind-badge.h3 {
 		background: rgba(34, 197, 94, 0.15);

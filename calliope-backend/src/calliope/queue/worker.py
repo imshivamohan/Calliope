@@ -182,6 +182,21 @@ class QueueWorker:
                     )
 
             workflow_id = job.get("workflow_id") or payload.get("workflow_id")
+            if not workflow_id and is_audio:
+                from calliope.audio.higgs import resolve_registered_audio_workflow
+                conn = get_db(config.settings.db_path)
+                try:
+                    multi_speaker = bool(payload.get("multi_speaker"))
+                    has_ref = bool(
+                        payload.get("voice_sample_path")
+                        or (payload.get("input_values") or {}).get("reference_audio")
+                    )
+                    workflow_id = resolve_registered_audio_workflow(
+                        conn, multi_speaker=multi_speaker, has_reference=has_ref
+                    )
+                finally:
+                    conn.close()
+
             if not workflow_id and kind in ("voice", "tts"):
                 from calliope.audio.higgs import build_voice_clone_prompt
                 text = (
@@ -210,6 +225,19 @@ class QueueWorker:
                         job, payload, workflow, dict(input_values)
                     )
                 patched = patch_workflow(workflow, input_values)
+                # For audio workflows, ensure the SaveAudio output node uses a clean clip filename prefix
+                if is_audio and job.get("clip_id"):
+                    prefix = f"clip_{job['clip_id']}_voice"
+                    for _nid, _node in patched.items():
+                        if isinstance(_node, dict) and _node.get("class_type") in (
+                            "SaveAudioMP3",
+                            "SaveAudio",
+                            "AudioSave",
+                            "SaveAudioOpus",
+                        ):
+                            _inputs = _node.get("inputs") or {}
+                            _inputs["filename_prefix"] = prefix
+                            _node["inputs"] = _inputs
             patched = await client.prepare_media_inputs(patched)
             prompt_id = await client.queue_prompt(patched)
 
@@ -536,6 +564,53 @@ class QueueWorker:
                     "UPDATE clips SET audio_path = ? WHERE id = ?",
                     (primary, job["clip_id"]),
                 )
+                # Auto-attach to project uploads library for instant discovery
+                try:
+                    import shutil
+                    uploads_dir = config.settings.assets_dir / "uploads"
+                    uploads_dir.mkdir(parents=True, exist_ok=True)
+                    dest_copy = uploads_dir / _fs_path(primary).name
+                    if not dest_copy.exists() and _fs_path(primary).exists():
+                        shutil.copy2(primary, dest_copy)
+                        logger.info("Auto-attached audio %s into project uploads %s", primary, dest_copy)
+                except Exception as exc:
+                    logger.warning("Failed to copy audio to uploads: %s", exc)
+
+                # Sync into clip's video_settings_json so formValues automatically bind to the audio node
+                try:
+                    clip_row = conn.execute(
+                        "SELECT video_settings_json, scene_id FROM clips WHERE id = ?",
+                        (job["clip_id"],),
+                    ).fetchone()
+                    if clip_row:
+                        raw_settings = clip_row["video_settings_json"]
+                        vsettings = json.loads(raw_settings) if raw_settings else {}
+                        input_vals = vsettings.setdefault("input_values", {})
+                        clip_wf = conn.execute(
+                            "SELECT workflow_id FROM clips WHERE id = ?",
+                            (job["clip_id"],),
+                        ).fetchone()
+                        scene_row = conn.execute(
+                            "SELECT workflow_id FROM scenes WHERE id = ?",
+                            (clip_row["scene_id"],),
+                        ).fetchone()
+                        wf_id = (
+                            vsettings.get("form_workflow_id")
+                            or (clip_wf["workflow_id"] if clip_wf else None)
+                            or (scene_row["workflow_id"] if scene_row else None)
+                        )
+                        wf_dict = self._load_workflow(wf_id)
+                        if wf_dict:
+                            wf_inputs = parse_dynamic_inputs(wf_dict)
+                            for winp in wf_inputs:
+                                if input_has_role(winp, "audio") or winp.get("kind") == "audio":
+                                    input_vals[str(winp["nodeId"])] = primary
+                        conn.execute(
+                            "UPDATE clips SET video_settings_json = ? WHERE id = ?",
+                            (json.dumps(vsettings), job["clip_id"]),
+                        )
+                except Exception as exc:
+                    logger.warning("Failed to update clip video_settings with audio path: %s", exc)
             elif scene_id and job["kind"] == "video":
                 # Legacy job (pre-clips schema): write the scene's default clip.
                 conn.execute(

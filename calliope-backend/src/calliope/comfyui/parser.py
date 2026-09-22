@@ -68,7 +68,9 @@ def parse_dynamic_outputs(workflow: dict[str, Any]) -> list[dict[str, Any]]:
             continue
         out_kind: ComfyOutputKind = class_to_output_kind(node.get("class_type", ""))
         canon = normalize_output_role(role)
-        if canon == "video":
+        if canon == "audio":
+            out_kind = "audio"
+        elif canon == "video":
             out_kind = "video"
         elif canon == "image":
             out_kind = "image"
